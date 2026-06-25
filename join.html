@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Join The 615 Hideaway — free member account for new music, articles, and community updates.">
+  <title>Join | The 615 Hideaway</title>
+  <link rel="icon" href="assets/logo.png" type="image/png">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="/" class="brand">
+        <img src="assets/logo.png" alt="The 615 Hideaway" class="brand-logo">
+        <div class="brand-text">
+          <span class="brand-name">The 615 Hideaway</span>
+          <span class="brand-tag">Records &amp; Entertainment</span>
+        </div>
+      </a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/">Home</a>
+        <a href="/artists/david-parmley">David Parmley</a>
+        <a href="/join" class="active" id="nav-auth-link">Join</a>
+        <a href="https://the615hideaway.github.io/radio-now/">Radio Now</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="auth-section">
+      <div class="container auth-wrap">
+        <div class="auth-card">
+          <span class="hero-eyebrow">Free to join</span>
+          <h1>Join The 615 Hideaway</h1>
+          <p class="auth-lead">
+            Create a free account for new music alerts, Artist Mindset articles,
+            and members-only updates from David Parmley and the label.
+          </p>
+
+          <div id="setup-notice" class="auth-alert auth-alert--warn hidden"></div>
+          <div id="form-error" class="auth-alert auth-alert--error hidden"></div>
+          <div id="form-success" class="auth-alert auth-alert--success hidden"></div>
+
+          <div class="auth-tabs" role="tablist" aria-label="Account access">
+            <button type="button" class="auth-tab active" data-auth-tab="signup" aria-selected="true">Create Account</button>
+            <button type="button" class="auth-tab" data-auth-tab="signin" aria-selected="false">Sign In</button>
+          </div>
+
+          <form id="signup-form" class="auth-panel" data-auth-panel="signup">
+            <label for="signup-name">Name</label>
+            <input type="text" id="signup-name" autocomplete="name" required placeholder="Your name">
+
+            <label for="signup-email">Email</label>
+            <input type="email" id="signup-email" autocomplete="email" required placeholder="you@email.com">
+
+            <label for="signup-password">Password</label>
+            <input type="password" id="signup-password" autocomplete="new-password" required minlength="8" placeholder="At least 8 characters">
+
+            <button type="submit" class="btn btn-primary btn-full">Create Free Account</button>
+          </form>
+
+          <form id="signin-form" class="auth-panel hidden" data-auth-panel="signin">
+            <label for="signin-email">Email</label>
+            <input type="email" id="signin-email" autocomplete="email" required placeholder="you@email.com">
+
+            <label for="signin-password">Password</label>
+            <input type="password" id="signin-password" autocomplete="current-password" required placeholder="Your password">
+
+            <button type="submit" class="btn btn-primary btn-full">Sign In</button>
+          </form>
+
+          <p class="auth-footnote">
+            DJs: <a href="https://the615hideaway.github.io/radio-now/">Radio Now catalog</a> stays separate for now.
+            Full DJ portal moves here after Wednesday.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>&copy; 2026 The 615 Hideaway Records. Nashville, TN.</p>
+      <div class="footer-links">
+        <a href="mailto:sammy@the615hideaway.com">sammy@the615hideaway.com</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-auth.js"></script>
+  <script src="js/join-app.js"></script>
+</body>
+</html>

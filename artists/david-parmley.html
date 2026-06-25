@@ -21,6 +21,7 @@
       <nav class="site-nav" aria-label="Main navigation">
         <a href="/">Home</a>
         <a href="/artists/david-parmley" class="active">David Parmley</a>
+        <a href="/join" id="nav-auth-link" class="nav-auth-link">Join</a>
         <a href="https://the615hideaway.github.io/radio-now/">Radio Now</a>
       </nav>
     </div>
@@ -197,5 +198,9 @@
       </div>
     </div>
   </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-auth.js"></script>
+  <script>HideawayAuth.updateNavAuthLink();</script>
 </body>
 </html>

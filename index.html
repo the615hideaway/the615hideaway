@@ -20,7 +20,8 @@
       </a>
       <nav class="site-nav" aria-label="Main navigation">
         <a href="/" class="active">Home</a>
-        <a href="/artists/david-parmley.html">David Parmley</a>
+        <a href="/artists/david-parmley">David Parmley</a>
+        <a href="/join" id="nav-auth-link" class="nav-auth-link">Join</a>
         <a href="https://the615hideaway.github.io/radio-now/">Radio Now</a>
       </nav>
     </div>
@@ -37,7 +38,8 @@
             Independent bluegrass from The 615 Hideaway Records.
           </p>
           <div class="hero-actions">
-            <a href="/artists/david-parmley" class="btn btn-primary">David Parmley Profile</a>
+            <a href="/join" class="btn btn-primary">Join Free</a>
+            <a href="/artists/david-parmley" class="btn btn-ghost">David Parmley Profile</a>
             <a href="https://sc.lnk.to/dp-CT.nt" class="btn btn-ghost" target="_blank" rel="noopener">Listen Now</a>
           </div>
         </div>
@@ -68,10 +70,10 @@
             <h3>Radio Now</h3>
             <p>Free DJ catalog for programmers and artists. Browse, preview, and download tracks.</p>
           </a>
-          <div class="card">
-            <h3>Artist Mindset <span class="coming-soon">Soon</span></h3>
-            <p>Weekly articles on motivation, songwriting, and building a sustainable music career.</p>
-          </div>
+          <a href="/join" class="card">
+            <h3>Join the Community</h3>
+            <p>Free member account for new music alerts, Artist Mindset articles, and label updates.</p>
+          </a>
         </div>
       </div>
     </section>
@@ -99,5 +101,9 @@
       </div>
     </div>
   </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-auth.js"></script>
+  <script>HideawayAuth.updateNavAuthLink();</script>
 </body>
 </html>

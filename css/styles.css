@@ -450,6 +450,148 @@ img { max-width: 100%; height: auto; display: block; }
   text-align: center;
 }
 
+/* Auth */
+.auth-section {
+  padding: 3rem 0 2rem;
+}
+
+.auth-wrap {
+  max-width: 520px;
+}
+
+.auth-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2rem;
+}
+
+.auth-card h1 {
+  margin: 0 0 0.75rem;
+  font-size: 1.8rem;
+}
+
+.auth-lead {
+  color: var(--text-secondary);
+  margin: 0 0 1.25rem;
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.auth-tab {
+  flex: 1;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-tab.active {
+  background: var(--gold-dim);
+  border-color: rgba(244, 196, 48, 0.35);
+  color: var(--gold-bright);
+}
+
+.auth-panel label {
+  display: block;
+  margin: 0.85rem 0 0.35rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.auth-panel input {
+  width: 100%;
+  padding: 0.75rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #0d0d0d;
+  color: var(--text);
+  font: inherit;
+}
+
+.auth-panel input:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+.btn-full {
+  width: 100%;
+  margin-top: 1.25rem;
+}
+
+.auth-alert {
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  font-size: 0.92rem;
+}
+
+.auth-alert--error {
+  background: rgba(230, 57, 57, 0.12);
+  border: 1px solid rgba(230, 57, 57, 0.35);
+  color: #ff9a9a;
+}
+
+.auth-alert--success {
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  color: #86efac;
+}
+
+.auth-alert--warn {
+  background: var(--gold-dim);
+  border: 1px solid rgba(244, 196, 48, 0.35);
+  color: var(--gold-bright);
+}
+
+.auth-footnote {
+  margin: 1.25rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.member-details {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.member-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.member-row:last-child {
+  border-bottom: none;
+}
+
+.member-label {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.member-value {
+  color: var(--text);
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.nav-auth-link {
+  color: var(--gold-bright) !important;
+}
+
 @media (max-width: 768px) {
   .hero-grid,
   .artist-hero-grid {

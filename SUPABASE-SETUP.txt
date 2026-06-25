@@ -1,0 +1,64 @@
+SUPABASE SETUP — THE 615 HIDEAWAY MEMBER JOIN
+=============================================
+
+This gets https://www.the615hideaway.com/join working so fans can create free accounts.
+
+STEP 1 — Create Supabase project (5 min)
+----------------------------------------
+1. Go to https://supabase.com/dashboard
+2. New project → name: the615hideaway
+3. Choose a strong database password (save it)
+4. Region: East US (closest to Nashville)
+
+STEP 2 — Run the database schema
+--------------------------------
+1. Supabase Dashboard → SQL Editor → New query
+2. Paste everything from: supabase/schema.sql
+3. Click Run
+
+STEP 3 — Auth settings
+----------------------
+1. Authentication → URL Configuration
+2. Site URL: https://www.the615hideaway.com
+3. Redirect URLs (add all):
+   - https://www.the615hideaway.com/account
+   - https://the615hideaway.com/account
+   - https://the615hideaway.vercel.app/account
+
+4. Authentication → Providers → Email
+   - Keep Email enabled
+   - For fastest launch: turn OFF "Confirm email" (optional — turn back on later)
+   - Or leave confirm ON and users verify email before first sign-in
+
+STEP 4 — Add keys to Vercel
+---------------------------
+1. Supabase → Project Settings → API
+2. Copy:
+   - Project URL  → SUPABASE_URL
+   - anon public key → SUPABASE_ANON_KEY
+
+3. Vercel → the615hideaway project → Settings → Environment Variables
+4. Add both variables for Production (and Preview if you want)
+5. Redeploy (Deployments → ... → Redeploy)
+
+STEP 5 — Test
+-------------
+1. Visit https://www.the615hideaway.com/join
+2. Create a test account
+3. Should land on /account with your name and email
+4. Supabase → Authentication → Users should show the new member
+5. Supabase → Table Editor → profiles should have a matching row
+
+WHAT'S LIVE AFTER SETUP
+-----------------------
+- /join — free member signup + sign in
+- /account — member dashboard (basic for now)
+- profiles table with roles: member, dj, artist, admin
+- Nav "Join" link becomes "My Account" when signed in
+
+COMING LATER (Wednesday+ build)
+-------------------------------
+- Resend email list sync
+- Stripe membership (Bluegrass Hideaway)
+- DJ portal at /radio-dj
+- Artist submissions, admin console
