@@ -80,6 +80,15 @@
           display_name: name,
           member_type: memberType
         });
+
+        if (memberType === 'artist') {
+          await supabase.from('artists').upsert({
+            owner_id: data.user.id,
+            slug: HideawayUtils.slugify(name),
+            display_name: name,
+            status: 'draft'
+          }, { onConflict: 'owner_id' });
+        }
       }
 
       if (data.session) {

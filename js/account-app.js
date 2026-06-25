@@ -8,9 +8,9 @@
     },
     artist: {
       label: 'Artist',
-      now: ['Your account is saved — we know you\'re an artist', 'David Parmley\'s profile is the template for roster pages'],
-      next: 'Your own artist page at /artists/your-name after roster review, plus /distribute track submissions',
-      eta: 'Artist pages — Phase 2 (Wednesday+). Roster review required.'
+      now: ['Edit your artist page in the Artist Portal', 'Bio, photo, streaming, Bandsintown, booking — you control it'],
+      next: 'Publish at /artists/your-name — your live artist website on the615hideaway.com',
+      eta: 'Live now — publish when your page is ready'
     },
     dj: {
       label: 'DJ / Radio Programmer',
@@ -45,6 +45,7 @@
   const roadmapNext = document.getElementById('roadmap-next');
   const roadmapEta = document.getElementById('roadmap-eta');
   const logoutBtn = document.getElementById('logout-btn');
+  const artistPortalBtn = document.getElementById('artist-portal-btn');
 
   function formatDate(value) {
     if (!value) return '—';
@@ -81,6 +82,10 @@
       memberRole.textContent = profile?.role || 'member';
       memberSince.textContent = formatDate(profile?.created_at || session.user.created_at);
       renderRoadmap(type);
+
+      if (type === 'artist' || profile?.role === 'artist' || profile?.role === 'admin') {
+        artistPortalBtn.classList.remove('hidden');
+      }
 
       gate.classList.add('hidden');
       panel.classList.remove('hidden');

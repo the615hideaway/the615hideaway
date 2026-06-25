@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Artist profile on The 615 Hideaway.">
+  <title>Artist | The 615 Hideaway</title>
+  <link rel="icon" href="../assets/logo.png" type="image/png">
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="/" class="brand">
+        <img src="../assets/logo.png" alt="The 615 Hideaway" class="brand-logo">
+        <div class="brand-text">
+          <span class="brand-name">The 615 Hideaway</span>
+          <span class="brand-tag">Records &amp; Entertainment</span>
+        </div>
+      </a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/">Home</a>
+        <a href="/join" id="nav-auth-link" class="nav-auth-link">Join</a>
+        <a href="https://the615hideaway.github.io/radio-now/">Radio Now</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="artist-page-root">
+    <section class="auth-section">
+      <div class="container">
+        <p class="auth-lead">Loading artist…</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>&copy; 2026 The 615 Hideaway Records. Nashville, TN.</p>
+      <div class="footer-links">
+        <a href="/join">Create your artist page</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/supabase-auth.js"></script>
+  <script src="../js/artist-page-app.js"></script>
+  <script>HideawayAuth.updateNavAuthLink();</script>
+</body>
+</html>
