@@ -67,7 +67,7 @@
         password,
         options: {
           data: { display_name: name, member_type: memberType },
-          emailRedirectTo: `${window.location.origin}/account`
+          emailRedirectTo: 'https://www.the615hideaway.com/account'
         }
       });
 

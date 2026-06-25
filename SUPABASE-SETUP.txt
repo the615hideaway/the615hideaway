@@ -20,8 +20,14 @@ STEP 3 — Auth settings
 ----------------------
 1. Authentication → URL Configuration
 2. Site URL: https://www.the615hideaway.com
-3. Redirect URLs (add all):
+3. Redirect URLs (add ALL of these — wildcards fix confirm-email links):
+   - https://www.the615hideaway.com/**
+   - https://the615hideaway.com/**
+   - https://the615hideaway.vercel.app/**
+
+   If wildcards don't work in your dashboard, add each line:
    - https://www.the615hideaway.com/account
+   - https://www.the615hideaway.com/artist-portal
    - https://the615hideaway.com/account
    - https://the615hideaway.vercel.app/account
 
