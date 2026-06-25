@@ -31,7 +31,12 @@
     <section class="auth-section">
       <div class="container auth-wrap">
         <div id="account-gate" class="auth-card">
-          <p class="auth-lead">Loading your account…</p>
+          <p id="account-gate-message" class="auth-lead">Loading your account…</p>
+          <div id="account-gate-error" class="auth-alert auth-alert--error hidden" role="alert"></div>
+          <div id="account-gate-actions" class="hero-actions hidden" style="margin-top:1rem;">
+            <a href="/join" class="btn btn-primary">Sign In</a>
+            <a href="/artist-portal" class="btn btn-ghost">Artist Portal</a>
+          </div>
         </div>
 
         <div id="account-panel" class="auth-card hidden">

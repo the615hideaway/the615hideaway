@@ -33,8 +33,10 @@
   };
 
   const gate = document.getElementById('account-gate');
+  const gateMessage = document.getElementById('account-gate-message');
+  const gateError = document.getElementById('account-gate-error');
+  const gateActions = document.getElementById('account-gate-actions');
   const panel = document.getElementById('account-panel');
-  const setupNotice = document.getElementById('setup-notice');
   const welcomeName = document.getElementById('welcome-name');
   const memberEmail = document.getElementById('member-email');
   const memberType = document.getElementById('member-type');
@@ -59,20 +61,47 @@
   function renderRoadmap(type) {
     const roadmap = ROADMAPS[type] || ROADMAPS.fan;
     roadmapLabel.textContent = roadmap.label;
-    roadmapNow.innerHTML = roadmap.now.map((item) => `<li>${item}</li>`).join('');
+    roadmapNow.innerHTML = roadmap.now.map((item) => '<li>' + item + '</li>').join('');
     roadmapNext.textContent = roadmap.next;
     roadmapEta.textContent = roadmap.eta;
   }
 
+  function showGateError(message, showActions) {
+    gateMessage.classList.add('hidden');
+    gateError.textContent = message;
+    gateError.classList.remove('hidden');
+    gate.classList.remove('hidden');
+    panel.classList.add('hidden');
+    if (showActions) gateActions.classList.remove('hidden');
+  }
+
   async function boot() {
     try {
+      await HideawayAuth.init();
+
+      const hashError = HideawayAuth.parseAuthHashError();
+      if (hashError) {
+        HideawayAuth.clearAuthHash();
+      }
+
       const session = await HideawayAuth.getSession();
+
       if (!session) {
+        if (hashError) {
+          showGateError(
+            'That email link expired — but your account may already be active. Sign in below.',
+            true
+          );
+          return;
+        }
         window.location.href = '/join';
         return;
       }
 
-      setupNotice.classList.add('hidden');
+      if (hashError) {
+        HideawayAuth.clearAuthHash();
+      }
+
       const profile = await HideawayAuth.getProfile();
       const type = profile?.member_type || session.user.user_metadata?.member_type || 'fan';
 
@@ -83,15 +112,18 @@
       memberSince.textContent = formatDate(profile?.created_at || session.user.created_at);
       renderRoadmap(type);
 
-      if (type === 'artist' || profile?.role === 'artist' || profile?.role === 'admin') {
+      if (artistPortalBtn && (type === 'artist' || profile?.role === 'artist' || profile?.role === 'admin')) {
         artistPortalBtn.classList.remove('hidden');
       }
 
       gate.classList.add('hidden');
       panel.classList.remove('hidden');
     } catch (err) {
-      setupNotice.classList.remove('hidden');
-      setupNotice.textContent = err.message;
+      showGateError(
+        (err.message || 'Could not load your account.') +
+          ' Try signing in again. Artists: run migration-member-type.sql and migration-artists.sql in Supabase if this persists.',
+        true
+      );
     }
   }
 
