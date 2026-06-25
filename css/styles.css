@@ -435,6 +435,21 @@ img { max-width: 100%; height: auto; display: block; }
   vertical-align: middle;
 }
 
+.tour-widget-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.tour-widget-footer {
+  margin: 1rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
 @media (max-width: 768px) {
   .hero-grid,
   .artist-hero-grid {
