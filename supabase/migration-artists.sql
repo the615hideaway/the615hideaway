@@ -22,6 +22,9 @@ create table if not exists public.artists (
 create index if not exists artists_slug_idx on public.artists (slug);
 create index if not exists artists_status_idx on public.artists (status);
 
+grant select, insert, update on table public.artists to authenticated;
+grant select on table public.artists to anon;
+
 alter table public.artists enable row level security;
 
 drop policy if exists "Published artists are public" on public.artists;

@@ -13,6 +13,10 @@ create table if not exists public.profiles (
   updated_at timestamptz not null default now()
 );
 
+grant usage on schema public to anon, authenticated;
+grant select, insert, update on table public.profiles to authenticated;
+grant select on table public.profiles to anon;
+
 alter table public.profiles enable row level security;
 
 drop policy if exists "Profiles viewable by owner" on public.profiles;
