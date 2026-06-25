@@ -417,10 +417,40 @@ img { max-width: 100%; height: auto; display: block; }
   align-items: center;
 }
 
+.footer-brand {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.footer-brand span {
+  color: var(--gold-bright);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
 .footer-links {
   display: flex;
   gap: 1.25rem;
   flex-wrap: wrap;
+}
+
+.badge-live {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  background: rgba(74, 222, 128, 0.12);
+  border: 1px solid rgba(74, 222, 128, 0.35);
+  color: #86efac;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-left: 0.35rem;
+  vertical-align: middle;
+}
+
+.card--live {
+  border-color: rgba(74, 222, 128, 0.25);
 }
 
 .coming-soon {
