@@ -1,0 +1,73 @@
+THE615HIDEAWAY.COM — WIX TO VERCEL (LIGHT SETUP)
+================================================
+
+Goal for today: get the new site live on Vercel WITHOUT breaking WIX email or other services.
+Full cutover can happen after Wednesday July 1, 2026.
+
+RECOMMENDED APPROACH (DNS only — keep domain registered at WIX)
+---------------------------------------------------------------
+This is the safest "light" move. You keep paying WIX for the domain; Vercel hosts the website.
+
+STEP 1 — Deploy to Vercel
+  1. Push this repo to GitHub (the615hideaway/the615hideaway)
+  2. Go to https://vercel.com/new
+  3. Import the615hideaway/the615hideaway repo
+  4. Framework Preset: Other (static site, no build command needed)
+  5. Deploy — you'll get a URL like the615hideaway.vercel.app
+
+STEP 2 — Add domain in Vercel
+  1. Vercel project → Settings → Domains
+  2. Add: the615hideaway.com
+  3. Add: www.the615hideaway.com
+  4. Vercel will show the DNS records you need (usually an A record + CNAME)
+
+STEP 3 — Update DNS at WIX (domain stays at WIX)
+  1. WIX Dashboard → Domains → the615hideaway.com → Manage DNS
+  2. Update these records (Vercel shows exact values):
+     - A record for @ (root) → 76.76.21.21 (Vercel's IP — confirm in Vercel dashboard)
+     - CNAME for www → cname.vercel-dns.com
+  3. Remove or lower TTL on old WIX A/CNAME records pointing to WIX hosting
+  4. DO NOT change nameservers yet unless you want full registrar transfer
+
+STEP 4 — Keep email working (Zoho)
+  If you use Zoho mail on this domain, leave these DNS records alone:
+     - MX records pointing to Zoho
+     - TXT records for SPF/DKIM/DMARC
+  Only change the A and www CNAME records for the website.
+
+STEP 5 — Verify
+  - DNS can take 15 minutes to 48 hours
+  - Vercel dashboard will show green checkmarks when verified
+  - Test: https://the615hideaway.com and /davidparmley
+
+OPTIONAL — Transfer domain registrar to Vercel (do later, not today)
+---------------------------------------------------------------------
+Only do this when you're ready to leave WIX completely for domain management.
+  1. Unlock domain at WIX
+  2. Get auth/EPP code from WIX
+  3. Vercel → Domains → Transfer → enter code
+  4. Approve transfer email
+  Takes 5–7 days. Do this AFTER the site is working on DNS.
+
+WIX SITE CUTOVER NOTES
+----------------------
+- Your WIX site stays live until DNS propagates to Vercel
+- Radio Now stays at: https://the615hideaway.github.io/radio-now/
+  (can move to the615hideaway.com/radio-now later)
+- Old WIX URL /davidparmley → new site /davidparmley (rewrite in vercel.json)
+
+WHAT'S IN THIS LIGHT BUILD
+--------------------------
+- Home page (index.html)
+- David Parmley artist profile (/artists/david-parmley.html)
+- Brand styling (gold/black, matches Radio Now)
+- Links to streaming, tour dates, Radio Now catalog
+
+COMING AFTER WEDNESDAY (full stack)
+-----------------------------------
+- Next.js app (needs Node.js installed locally)
+- Supabase for content/auth
+- Resend for email list
+- Stripe for Bluegrass Hideaway membership
+- Zoho email integration
+- Migrate blog, trivia, membership from WIX
