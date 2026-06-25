@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Privacy and security at The 615 Hideaway.">
+  <title>Privacy &amp; Security | The 615 Hideaway</title>
+  <link rel="icon" href="assets/logo.png" type="image/png">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="/" class="brand">
+        <img src="assets/logo.png" alt="The 615 Hideaway" class="brand-logo">
+        <div class="brand-text">
+          <span class="brand-name">The 615 Hideaway</span>
+          <span class="brand-tag">Records &amp; Entertainment</span>
+        </div>
+      </a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/">Home</a>
+        <a href="/join" id="nav-auth-link" class="nav-auth-link">Join</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="section">
+      <div class="container legal-wrap">
+        <div class="section-header">
+          <h1>Privacy &amp; Security</h1>
+          <p>Plain talk about how we handle your account and your data.</p>
+        </div>
+
+        <div class="legal-block">
+          <h2>What we collect</h2>
+          <p>When you join, we store your name, email, account type (fan, artist, DJ, etc.), and anything you add to your artist page. DJs and members may also get email updates if you opt in later.</p>
+        </div>
+
+        <div class="legal-block">
+          <h2>How we protect it</h2>
+          <ul class="roadmap-list">
+            <li><strong>HTTPS everywhere</strong> — the615hideaway.com is encrypted in transit.</li>
+            <li><strong>Supabase Auth</strong> — passwords are hashed; we never store plain-text passwords.</li>
+            <li><strong>Row Level Security</strong> — your profile and draft artist page are only editable by you.</li>
+            <li><strong>Published artist pages only</strong> — drafts stay private until you hit Publish.</li>
+            <li><strong>No selling your data</strong> — we don't sell member lists to third parties.</li>
+          </ul>
+        </div>
+
+        <div class="legal-block">
+          <h2>Third-party services</h2>
+          <p>We use trusted partners to run the platform:</p>
+          <ul class="roadmap-list">
+            <li><strong>Vercel</strong> — website hosting</li>
+            <li><strong>Supabase</strong> — accounts and artist data</li>
+            <li><strong>Bandsintown</strong> — tour widgets (when you add your Bandsintown link)</li>
+            <li><strong>Resend / Zoho</strong> — email (rolling out)</li>
+            <li><strong>Stripe</strong> — payments for submissions and membership (rolling out)</li>
+          </ul>
+        </div>
+
+        <div class="legal-block">
+          <h2>Your control</h2>
+          <p>You can sign out anytime. To update or delete your account, email <a href="mailto:sammy@the615hideaway.com">sammy@the615hideaway.com</a> and we'll take care of it.</p>
+        </div>
+
+        <div class="legal-block">
+          <h2>Reporting a problem</h2>
+          <p>If you see something wrong with your account or think something's been compromised, contact us right away at <a href="mailto:sammy@the615hideaway.com">sammy@the615hideaway.com</a>.</p>
+        </div>
+
+        <p class="auth-footnote">Last updated June 2026. We'll update this page as new features roll out.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p class="footer-brand">&copy; 2026 The 615 Hideaway<br><span>Records &amp; Entertainment</span> · Nashville, TN</p>
+      <div class="footer-links">
+        <a href="/privacy">Privacy &amp; Security</a>
+        <a href="mailto:sammy@the615hideaway.com">sammy@the615hideaway.com</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-auth.js"></script>
+  <script>HideawayAuth.updateNavAuthLink();</script>
+</body>
+</html>
