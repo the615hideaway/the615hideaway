@@ -12,6 +12,8 @@
     }
   ],
   "rewrites": [
+    { "source": "/join", "destination": "/join.html" },
+    { "source": "/account", "destination": "/account.html" },
     { "source": "/davidparmley", "destination": "/artists/david-parmley.html" },
     { "source": "/artists/david-parmley", "destination": "/artists/david-parmley.html" }
   ]

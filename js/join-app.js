@@ -1,27 +1,19 @@
 (function () {
-  const formError = document.getElementById('form-error');
-  const formSuccess = document.getElementById('form-success');
-  const setupNotice = document.getElementById('setup-notice');
+  const authMessage = document.getElementById('auth-message');
   const signupForm = document.getElementById('signup-form');
   const signinForm = document.getElementById('signin-form');
   const tabs = document.querySelectorAll('[data-auth-tab]');
   const panels = document.querySelectorAll('[data-auth-panel]');
 
-  function showError(message) {
-    formSuccess.classList.add('hidden');
-    formError.textContent = message;
-    formError.classList.remove('hidden');
+  function showMessage(message, type) {
+    authMessage.textContent = message;
+    authMessage.className = 'auth-alert auth-alert--' + type;
+    authMessage.classList.remove('hidden');
   }
 
-  function showSuccess(message) {
-    formError.classList.add('hidden');
-    formSuccess.textContent = message;
-    formSuccess.classList.remove('hidden');
-  }
-
-  function clearMessages() {
-    formError.classList.add('hidden');
-    formSuccess.classList.add('hidden');
+  function clearMessage() {
+    authMessage.textContent = '';
+    authMessage.className = 'auth-alert hidden';
   }
 
   tabs.forEach((tab) => {
@@ -34,7 +26,7 @@
       panels.forEach((panel) => {
         panel.classList.toggle('hidden', panel.dataset.authPanel !== target);
       });
-      clearMessages();
+      clearMessage();
     });
   });
 
@@ -46,10 +38,9 @@
         window.location.href = '/account';
         return;
       }
-      setupNotice.classList.add('hidden');
+      clearMessage();
     } catch (err) {
-      setupNotice.classList.remove('hidden');
-      setupNotice.textContent = err.message;
+      showMessage(err.message, 'warn');
       signupForm.querySelector('button[type="submit"]').disabled = true;
       signinForm.querySelector('button[type="submit"]').disabled = true;
     }
@@ -57,14 +48,14 @@
 
   signupForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    clearMessages();
+    clearMessage();
 
     const name = document.getElementById('signup-name').value.trim();
     const email = document.getElementById('signup-email').value.trim();
     const password = document.getElementById('signup-password').value;
 
     if (!name || !email || password.length < 8) {
-      showError('Enter your name, email, and a password with at least 8 characters.');
+      showMessage('Enter your name, email, and a password with at least 8 characters.', 'error');
       return;
     }
 
@@ -86,16 +77,16 @@
         return;
       }
 
-      showSuccess('Check your email to confirm your account, then sign in.');
+      showMessage('Account created! Check your email to confirm, then sign in.', 'success');
       document.querySelector('[data-auth-tab="signin"]').click();
     } catch (err) {
-      showError(err.message || 'Could not create account. Please try again.');
+      showMessage(err.message || 'Could not create account. Please try again.', 'error');
     }
   });
 
   signinForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    clearMessages();
+    clearMessage();
 
     const email = document.getElementById('signin-email').value.trim();
     const password = document.getElementById('signin-password').value;
@@ -106,7 +97,7 @@
       if (error) throw error;
       window.location.href = '/account';
     } catch (err) {
-      showError(err.message || 'Could not sign in. Check your email and password.');
+      showMessage(err.message || 'Could not sign in. Check your email and password.', 'error');
     }
   });
 

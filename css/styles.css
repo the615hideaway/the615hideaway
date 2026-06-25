@@ -53,6 +53,8 @@ h1, h2, h3, .brand-name {
 a { color: var(--gold-bright); text-decoration: none; }
 a:hover { color: var(--text); }
 
+.hidden { display: none !important; }
+
 img { max-width: 100%; height: auto; display: block; }
 
 .container {
@@ -532,7 +534,13 @@ img { max-width: 100%; height: auto; display: block; }
   padding: 0.85rem 1rem;
   border-radius: 10px;
   margin-bottom: 1rem;
-  font-size: 0.92rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.auth-alert:empty {
+  display: none;
 }
 
 .auth-alert--error {
