@@ -7,6 +7,8 @@ create table if not exists public.profiles (
   display_name text,
   role text not null default 'member'
     check (role in ('member', 'dj', 'artist', 'admin')),
+  member_type text not null default 'fan'
+    check (member_type in ('fan', 'artist', 'dj', 'festival', 'industry')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -35,11 +37,12 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.profiles (id, email, display_name)
+  insert into public.profiles (id, email, display_name, member_type)
   values (
     new.id,
     new.email,
-    coalesce(new.raw_user_meta_data->>'display_name', split_part(new.email, '@', 1))
+    coalesce(new.raw_user_meta_data->>'display_name', split_part(new.email, '@', 1)),
+    coalesce(new.raw_user_meta_data->>'member_type', 'fan')
   )
   on conflict (id) do nothing;
   return new;

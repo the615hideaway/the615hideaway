@@ -520,9 +520,20 @@ img { max-width: 100%; height: auto; display: block; }
   font: inherit;
 }
 
-.auth-panel input:focus {
+.auth-panel input:focus,
+.auth-panel select:focus {
   outline: none;
   border-color: var(--gold);
+}
+
+.auth-panel select {
+  width: 100%;
+  padding: 0.75rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #0d0d0d;
+  color: var(--text);
+  font: inherit;
 }
 
 .btn-full {
@@ -593,7 +604,50 @@ img { max-width: 100%; height: auto; display: block; }
 .member-value {
   color: var(--text);
   font-weight: 600;
-  text-transform: capitalize;
+}
+
+.roadmap-card {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(244, 196, 48, 0.04);
+}
+
+.roadmap-card h2 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+}
+
+.roadmap-section-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gold-bright);
+}
+
+.roadmap-list {
+  margin: 0 0 1rem;
+  padding-left: 1.2rem;
+  color: var(--text-secondary);
+}
+
+.roadmap-list li {
+  margin-bottom: 0.35rem;
+}
+
+.roadmap-next {
+  margin: 0 0 0.75rem;
+  color: var(--text-secondary);
+}
+
+.roadmap-eta {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  font-style: italic;
 }
 
 .nav-auth-link {

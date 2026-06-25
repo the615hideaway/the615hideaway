@@ -51,6 +51,7 @@
     clearMessage();
 
     const name = document.getElementById('signup-name').value.trim();
+    const memberType = document.getElementById('signup-type').value;
     const email = document.getElementById('signup-email').value.trim();
     const password = document.getElementById('signup-password').value;
 
@@ -65,12 +66,21 @@
         email,
         password,
         options: {
-          data: { display_name: name },
+          data: { display_name: name, member_type: memberType },
           emailRedirectTo: `${window.location.origin}/account`
         }
       });
 
       if (error) throw error;
+
+      if (data.user) {
+        await supabase.from('profiles').upsert({
+          id: data.user.id,
+          email,
+          display_name: name,
+          member_type: memberType
+        });
+      }
 
       if (data.session) {
         window.location.href = '/account';
