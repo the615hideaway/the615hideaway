@@ -171,15 +171,13 @@
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…';
 
     try {
-      const data = await DjAuth.authRequest('spotlight_admin_save', {
-        spotlights: picks.map((pick) => ({
-          artistName: pick.artistName,
-          songTitle: pick.songTitle,
-          priority: pick.priority,
-          until: pick.until,
-          badge: pick.badge,
-        })),
-      });
+      const data = await SpotlightAdmin.saveAll(picks.map((pick) => ({
+        artistName: pick.artistName,
+        songTitle: pick.songTitle,
+        priority: pick.priority,
+        until: pick.until,
+        badge: pick.badge,
+      })));
       syncPicksFromServer(data.spotlights);
       if (typeof RadioDB !== 'undefined') RadioDB.invalidateCatalogCache();
       if (status) {
@@ -200,7 +198,7 @@
     try {
       const [songs, spotlightData] = await Promise.all([
         RadioDB.getAllSongs(),
-        DjAuth.authRequest('spotlight_admin_list'),
+        SpotlightAdmin.fetchAdminList(),
       ]);
       catalogSongs = songs;
       maxSlots = spotlightData.maxSlots || maxSlots;

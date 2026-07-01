@@ -1,5 +1,7 @@
 const DjAuth = {
   _restorePromise: null,
+  _signedOut: false,
+  _signingOut: false,
 
   async _getSupabase() {
     if (typeof HideawayAuth === 'undefined') {
@@ -106,20 +108,6 @@ const DjAuth = {
     }
   },
 
-  _hasSupabaseAuthToken() {
-    try {
-      for (let i = 0; i < localStorage.length; i += 1) {
-        const key = localStorage.key(i);
-        if (!key) continue;
-        if (key === 'the615hideaway-supabase-auth' || (key.startsWith('sb-') && key.endsWith('-auth-token'))) {
-          const parsed = JSON.parse(localStorage.getItem(key) || '{}');
-          if (parsed?.access_token || parsed?.currentSession?.access_token) return true;
-        }
-      }
-    } catch (_) {}
-    return false;
-  },
-
   clearLocalSession() {
     sessionStorage.removeItem(CONFIG.djSessionKey);
     localStorage.removeItem(CONFIG.djSessionKey);
@@ -161,12 +149,29 @@ const DjAuth = {
     } catch (_) {}
   },
 
+  _clearSupabaseAuthStorage() {
+    try {
+      localStorage.removeItem('the615hideaway-supabase-auth');
+      for (let i = localStorage.length - 1; i >= 0; i -= 1) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('sb-') && key.endsWith('-auth-token')) {
+          localStorage.removeItem(key);
+        }
+      }
+    } catch (_) {}
+  },
+
   async logout() {
+    this._signingOut = true;
+    this._signedOut = true;
     this.clearLocalSession();
     sessionStorage.removeItem(CONFIG.artistSessionKey);
     try {
-      await HideawayAuth.signOut();
+      const supabase = await this._getSupabase();
+      await supabase.auth.signOut();
     } catch (_) {}
+    this._clearSupabaseAuthStorage();
+    this._signingOut = false;
   },
 
   async _ensureMemberProfile(supabase, session, memberType) {
@@ -286,16 +291,11 @@ const DjAuth = {
   },
 
   async completeSessionSetup(session) {
+    this._signedOut = false;
     const supabase = await this._getSupabase();
     await this._ensureMemberProfile(supabase, session, 'dj');
-
-    const profileRow = await this._ensureDjProfileFromMetadata(supabase, session);
-    if (!profileRow?.profile_complete) {
-      throw new Error('PROFILE_INCOMPLETE');
-    }
-
-    const payload = session.user.user_metadata?.dj_profile || profileRow;
-    return this._activateSession(session, profileRow, payload);
+    await this._ensureDjProfileFromMetadata(supabase, session);
+    return this._activateSessionLight(session);
   },
 
   async _loadDjProfile(supabase, userId) {
@@ -378,48 +378,37 @@ const DjAuth = {
     return publicDj;
   },
 
-  async forceRestoreFromSupabase() {
+  async resolveSession() {
+    if (this._signingOut) return null;
+
     const supabase = await this._getSupabase();
     const { data } = await supabase.auth.getSession();
     const session = data.session;
-    if (!session) return null;
 
-    try {
-      return await this._activateSessionLight(session);
-    } catch (err) {
-      if (String(err.message) === 'PROFILE_INCOMPLETE' && typeof DjBoot !== 'undefined') {
-        DjBoot._needsProfileCompletion = true;
-      }
+    if (!session) {
+      this.clearLocalSession();
+      return null;
     }
 
-    try {
-      const profileRow = await this._loadDjProfile(supabase, session.user.id);
-      if (profileRow) {
-        const publicDj = this._minimalDjFromSession(session, profileRow);
-        this.saveSession({ token: this.getToken() || '', dj: publicDj });
-        return publicDj;
-      }
-    } catch (_) {}
+    this._signedOut = false;
 
-    const publicDj = this._minimalDjFromSession(session);
-    this.saveSession({ token: this.getToken() || '', dj: publicDj });
-    return publicDj;
-  },
-
-  async resolveSession() {
     if (this.getSession()?.dj) {
       await this.ensureDjEmailOnCachedSession();
       return this.getDj();
     }
 
-    const restored = await this.restoreSession();
-    if (restored) return restored;
-
-    if (this._hasSupabaseAuthToken()) {
-      return this.forceRestoreFromSupabase();
+    try {
+      return await this._activateSessionLight(session);
+    } catch (err) {
+      if (String(err.message) === 'PROFILE_INCOMPLETE') {
+        if (typeof DjBoot !== 'undefined') DjBoot._needsProfileCompletion = true;
+        const publicDj = this._minimalDjFromSession(session);
+        this.saveSession({ token: '', dj: publicDj });
+        return publicDj;
+      }
+      console.warn('DJ session resolve failed:', err.message);
+      return null;
     }
-
-    return null;
   },
 
   async _activateSession(session, profileRow, profilePayload) {
@@ -458,43 +447,7 @@ const DjAuth = {
   },
 
   async restoreSession() {
-    if (this.isAuthenticated()) {
-      await this.ensureDjEmailOnCachedSession();
-      return this.getDj();
-    }
-    if (this._restorePromise) return this._restorePromise;
-
-    this._restorePromise = (async () => {
-      try {
-        const supabase = await this._getSupabase();
-        const { data } = await supabase.auth.getSession();
-        const session = data.session;
-        if (!session) return null;
-
-        try {
-          return await this.completeSessionSetup(session);
-        } catch (err) {
-          if (String(err.message) === 'PROFILE_INCOMPLETE' && typeof DjBoot !== 'undefined') {
-            DjBoot._needsProfileCompletion = true;
-          }
-          try {
-            return await this._activateSessionLight(session);
-          } catch (lightErr) {
-            if (String(lightErr.message) === 'PROFILE_INCOMPLETE' && typeof DjBoot !== 'undefined') {
-              DjBoot._needsProfileCompletion = true;
-            }
-            return this.forceRestoreFromSupabase();
-          }
-        }
-      } catch (err) {
-        console.warn('DJ session restore failed:', err.message);
-        return null;
-      } finally {
-        this._restorePromise = null;
-      }
-    })();
-
-    return this._restorePromise;
+    return this.resolveSession();
   },
 
   async login(email, password) {
@@ -511,6 +464,7 @@ const DjAuth = {
       throw error;
     }
 
+    this._signedOut = false;
     try {
       return await this.completeSessionSetup(data.session);
     } catch (err) {
@@ -582,34 +536,7 @@ const DjAuth = {
   },
 
   async authRequest(action, payload = {}) {
-    await this.restoreSession();
-    const token = this.getToken();
-    if (!token) {
-      throw new Error('Radio Now catalog session is not linked yet. Sign out and sign in again.');
-    }
-
-    if (!CONFIG.googleScriptUrl || !CONFIG.googleScriptUrl.includes('script.google.com')) {
-      throw new Error('Radio Now catalog service is not configured.');
-    }
-
-    const response = await fetch(CONFIG.googleScriptUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action, token, ...payload })
-    });
-
-    let data;
-    try {
-      data = await response.json();
-    } catch (err) {
-      throw new Error('Could not reach the Radio Now catalog service.');
-    }
-
-    if (!data.success) {
-      throw new Error(data.error || 'Request failed');
-    }
-
-    return data;
+    throw new Error(`"${action}" is no longer served by Google Sheets. Update the app to use Supabase for this action.`);
   },
 
   updateDjProfile(dj) {
@@ -637,14 +564,8 @@ const DjAuth = {
     }, { onConflict: 'id' });
     if (error) throw error;
 
-    const bridge = await this._syncCatalogSession(session, payload);
-    if (bridge.dj) {
-      this.saveSession({ token: bridge.token || this.getToken(), dj: bridge.dj });
-      return bridge.dj;
-    }
-
-    const publicDj = this.rowToPublic(row, session);
-    this.updateDjProfile(publicDj);
+    const publicDj = this._mergePublicDj(this.rowToPublic(row, session), session);
+    this.saveSession({ token: '', dj: publicDj });
     return publicDj;
   }
 };

@@ -90,6 +90,15 @@ const RadioDB = {
   },
 
   async loadCatalogPayload() {
+    if (CONFIG.useSupabaseCatalog && typeof SupabaseCatalog !== 'undefined') {
+      try {
+        const live = await SupabaseCatalog.fetchCatalogPayload();
+        if ((live.songs || []).length) return live;
+      } catch (err) {
+        console.warn('Supabase catalog failed, using songs.json fallback:', err);
+      }
+    }
+
     if (CONFIG.catalogLiveFromSheet && typeof SheetCatalog !== 'undefined') {
       try {
         const live = await SheetCatalog.fetchCatalogPayload();

@@ -7,9 +7,9 @@ const CONFIG = {
   djSessionKey: 'radio_now_dj_session',
   artistSessionKey: 'radio_now_artist_session',
 
-  // Live catalog: reads Form Responses 1 directly (new songs show on refresh).
-  // songs.json is only a fallback if the sheet fetch fails.
-  catalogLiveFromSheet: true,
+  // Catalog source: Supabase (see supabase/migration-catalog.sql + /api/import-catalog).
+  useSupabaseCatalog: true,
+  catalogLiveFromSheet: false,
   catalogSheetNames: ['Form Responses 1', 'Sheet1'],
   songsDataUrl: 'data/songs.json',
 

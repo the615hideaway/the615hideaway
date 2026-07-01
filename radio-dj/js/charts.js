@@ -1,15 +1,74 @@
 const Charts = {
-  async fetch(limit = 10) {
-    const scriptUrl = String(CONFIG.googleScriptUrl || '').trim();
-    if (!scriptUrl.includes('script.google.com')) {
-      throw new Error('Charts need Apps Script setup.');
-    }
+  isDownloadEvent(eventType) {
+    const type = String(eventType || '').trim().toLowerCase();
+    return type === 'downloaded'
+      || type === 'download_mp3'
+      || type === 'download_wav'
+      || type === 'download_zip';
+  },
 
-    const url = `${scriptUrl.replace(/\/$/, '')}?action=charts&limit=${encodeURIComponent(limit)}`;
-    const response = await fetch(url, { cache: 'no-store' });
-    const data = await response.json();
-    if (!data.success) throw new Error(data.error || 'Charts unavailable');
-    return data;
+  bumpChartCount(bucket, songId, meta) {
+    if (!bucket[songId]) {
+      bucket[songId] = {
+        songId,
+        songTitle: meta.songTitle || 'Untitled',
+        artistName: meta.artistName || 'Unknown Artist',
+        musicStyle: meta.musicStyle || '',
+        count: 0,
+      };
+    }
+    bucket[songId].count += 1;
+    if (meta.songTitle) bucket[songId].songTitle = meta.songTitle;
+    if (meta.artistName) bucket[songId].artistName = meta.artistName;
+    if (meta.musicStyle) bucket[songId].musicStyle = meta.musicStyle;
+  },
+
+  sortChartEntries(bucket, limit) {
+    return Object.keys(bucket)
+      .map((key) => bucket[key])
+      .sort((a, b) => {
+        if (b.count !== a.count) return b.count - a.count;
+        return String(a.songTitle).localeCompare(String(b.songTitle));
+      })
+      .slice(0, limit || 10);
+  },
+
+  async fetch(limit = 10) {
+    const supabase = await HideawayAuth.init();
+    const monthAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+    const { data, error } = await supabase
+      .from('dj_activity')
+      .select('event_type, song_id, song_title, artist_name, music_style, created_at')
+      .gte('created_at', new Date(monthAgo).toISOString())
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    const now = Date.now();
+    const weekAgo = now - (7 * 24 * 60 * 60 * 1000);
+    const weekCounts = {};
+    const monthCounts = {};
+
+    (data || []).forEach((row) => {
+      if (!this.isDownloadEvent(row.event_type)) return;
+      const songId = row.song_id;
+      if (!songId) return;
+      const ts = Date.parse(row.created_at);
+      if (Number.isNaN(ts)) return;
+      const meta = {
+        songTitle: row.song_title,
+        artistName: row.artist_name,
+        musicStyle: row.music_style,
+      };
+      if (ts >= weekAgo) this.bumpChartCount(weekCounts, songId, meta);
+      if (ts >= monthAgo) this.bumpChartCount(monthCounts, songId, meta);
+    });
+
+    return {
+      success: true,
+      week: this.sortChartEntries(weekCounts, limit),
+      month: this.sortChartEntries(monthCounts, limit),
+    };
   },
 
   renderList(container, items, emptyMessage, options = {}) {

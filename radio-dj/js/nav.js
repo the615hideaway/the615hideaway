@@ -69,12 +69,17 @@ const SiteNav = {
 
   bindLogout(button, onLogout) {
     button?.addEventListener('click', async () => {
-      await AccountAuth.logout();
-      if (typeof DjAuthUI !== 'undefined') DjAuthUI.updateWelcome();
-      if (typeof ArtistAuthUI !== 'undefined') ArtistAuthUI.updateWelcome();
-      const nav = document.querySelector('[data-site-nav]');
-      this.init(nav?.dataset.navActive);
-      onLogout?.();
+      button.disabled = true;
+      try {
+        await AccountAuth.logout();
+        if (typeof DjAuthUI !== 'undefined') DjAuthUI.updateWelcome();
+        if (typeof ArtistAuthUI !== 'undefined') ArtistAuthUI.updateWelcome();
+        const nav = document.querySelector('[data-site-nav]');
+        this.init(nav?.dataset.navActive);
+        onLogout?.();
+      } finally {
+        button.disabled = false;
+      }
     });
   },
 };
