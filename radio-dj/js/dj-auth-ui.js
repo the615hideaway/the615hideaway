@@ -8,6 +8,7 @@ const DjAuthUI = {
     const tabs = gate ? gate.querySelectorAll('[data-auth-tab]') : [];
     const panels = gate ? gate.querySelectorAll('[data-auth-panel]') : [];
     const onAuthenticated = options.onAuthenticated || (() => {});
+    let profileCompletionActive = false;
 
     const ensureSignupError = () => {
       let el = document.getElementById('signup-error');
@@ -83,6 +84,22 @@ const DjAuthUI = {
       switchTab(tabParam === 'signup' ? 'signup' : 'login');
     }
 
+    const showProfileCompletion = async () => {
+      profileCompletionActive = true;
+      switchTab('signup');
+      if (typeof DjSignupForm !== 'undefined') {
+        DjSignupForm.mount({ mode: 'complete' });
+        await DjSignupForm.prefillFromSession('complete');
+      }
+      showSuccess(
+        ensureSignupNotice(),
+        'You are signed in. Add your station and program details, then save to open the catalog.'
+      );
+    };
+
+    const isCompleteMode = () =>
+      profileCompletionActive || signupForm?.dataset.djSignupMode === 'complete';
+
     if (typeof DjSignupForm !== 'undefined') {
       DjSignupForm.mount();
     }
@@ -117,6 +134,10 @@ const DjAuthUI = {
         DjAuthUI.updateWelcome();
         onAuthenticated();
       } catch (err) {
+        if (String(err.message) === 'PROFILE_INCOMPLETE') {
+          await showProfileCompletion();
+          return;
+        }
         showError(loginError, err.message);
       } finally {
         submitBtn.disabled = false;
@@ -134,8 +155,9 @@ const DjAuthUI = {
       submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating account…';
 
       try {
+        const completeMode = isCompleteMode();
         const fields = typeof DjSignupForm !== 'undefined'
-          ? DjSignupForm.collect()
+          ? DjSignupForm.collect(completeMode ? 'complete' : 'signup')
           : {
             firstName: document.getElementById('signup-name')?.value || '',
             lastName: '',
@@ -145,6 +167,17 @@ const DjAuthUI = {
             password: document.getElementById('signup-password')?.value || '',
             shareEmail: !!document.getElementById('signup-share-email')?.checked,
           };
+
+        if (completeMode) {
+          submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving profile…';
+          await DjAuth.saveProfileFromFields(fields);
+          profileCompletionActive = false;
+          signupForm.reset();
+          DjAuthUI.updateWelcome();
+          onAuthenticated();
+          return;
+        }
+
         const result = await DjAuth.signup(fields);
         if (result?.pendingConfirmation) {
           signupForm.reset();
@@ -168,7 +201,26 @@ const DjAuthUI = {
       }
     });
 
-    return { switchTab, clearErrors, showBootMessage };
+    const checkAfterBoot = async () => {
+      if (typeof DjBoot !== 'undefined' && DjBoot.needsProfileCompletion?.()) {
+        DjBoot.consumeNeedsProfileCompletion();
+        await showProfileCompletion();
+        return true;
+      }
+
+      if (typeof DjAuth !== 'undefined' && DjAuth.isAuthenticated()) return false;
+
+      try {
+        if (await DjAuth.needsProfileCompletion()) {
+          await showProfileCompletion();
+          return true;
+        }
+      } catch (_) {}
+
+      return false;
+    };
+
+    return { switchTab, clearErrors, showBootMessage, showProfileCompletion, checkAfterBoot };
   },
 
   showBootMessage(onAuthenticated) {
@@ -179,11 +231,13 @@ const DjAuthUI = {
     const bootMessage = typeof DjBoot !== 'undefined' ? DjBoot.consumeMessage() : '';
     if (!bootMessage) return;
 
+    const needsProfile = bootMessage.toLowerCase().includes('finish your dj profile');
     const isSuccess = bootMessage.toLowerCase().includes('confirmed') || bootMessage.toLowerCase().includes('welcome');
     if (isSuccess && typeof DjAuth !== 'undefined' && DjAuth.isAuthenticated()) {
       onAuthenticated?.();
       return;
     }
+    if (needsProfile) return;
 
     if (loginError) {
       loginError.textContent = bootMessage;

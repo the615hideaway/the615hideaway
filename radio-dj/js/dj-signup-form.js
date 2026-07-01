@@ -30,6 +30,7 @@ const DjSignupForm = {
     const mode = options.mode || 'signup';
     const p = (name) => this.fieldId(name, mode);
     const isProfile = mode === 'profile';
+    const isComplete = mode === 'complete';
 
     const formatOptions = this.formats.map((value) =>
       `<option value="${Utils.escapeHtml(value)}">${Utils.escapeHtml(value)}</option>`,
@@ -39,9 +40,20 @@ const DjSignupForm = {
       `<option value="${Utils.escapeHtml(value)}">${Utils.escapeHtml(value)}</option>`,
     ).join('');
 
-    const note = isProfile
-      ? 'Artists see these station and program details when they download your music. Your login email stays private — only your DJ contact email can be shared below.'
-      : 'Artists see your station and program details when they download your music. Set a DJ contact email if you want artists to reach you on a different address than your login.';
+    const shareOptionHtml = `
+            <div class="dj-signup-option">
+              <p class="dj-signup-option-label">Email sharing (optional)</p>
+              <label class="checkbox-field checkbox-field--panel">
+                <input type="checkbox" id="${p('share-email')}">
+                <span>Share my DJ contact email with artists when I download their music</span>
+              </label>
+            </div>`;
+
+    const note = isComplete
+      ? 'You are signed in. Add your station and program details below, then save to open the Radio Now catalog.'
+      : isProfile
+        ? 'Artists see these station and program details when they download your music. Your login email stays private — only your DJ contact email can be shared below.'
+        : 'Artists see your station and program details when they download your music. Set a DJ contact email if you want artists to reach you on a different address than your login.';
 
     const contactSection = `
         <fieldset class="dj-signup-section">
@@ -55,7 +67,7 @@ const DjSignupForm = {
           </div>
         </fieldset>`;
 
-    const accountSection = isProfile ? contactSection : `
+    const accountSection = (isProfile || isComplete) ? (contactSection + (isComplete ? shareOptionHtml : '')) : `
         <fieldset class="dj-signup-section">
           <legend>Account</legend>
           <div class="dj-signup-grid">
@@ -72,19 +84,15 @@ const DjSignupForm = {
               <label for="${p('password')}">Password</label>
               <input type="password" id="${p('password')}" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" required>
             </div>
-            <div class="dj-signup-option">
-              <p class="dj-signup-option-label">Email sharing (optional)</p>
-              <label class="checkbox-field checkbox-field--panel">
-                <input type="checkbox" id="${p('share-email')}">
-                <span>Share my DJ contact email with artists when I download their music</span>
-              </label>
-            </div>
+            ${shareOptionHtml}
           </div>
         </fieldset>`;
 
-    const intro = isProfile
-      ? '<h2 class="dj-signup-intro">Update your DJ profile</h2>'
-      : '<h2 class="dj-signup-intro">Create your free DJ account</h2>';
+    const intro = isComplete
+      ? '<h2 class="dj-signup-intro">Finish your DJ profile</h2>'
+      : isProfile
+        ? '<h2 class="dj-signup-intro">Update your DJ profile</h2>'
+        : '<h2 class="dj-signup-intro">Create your free DJ account</h2>';
 
     return `
       <div class="dj-signup-form dashboard-form ${isProfile ? 'dj-signup-form--profile' : ''}">
@@ -172,25 +180,36 @@ const DjSignupForm = {
       </div>`;
   },
 
-  mount() {
+  mount(options = {}) {
     const form = document.getElementById('signup-form');
-    if (!form || form.dataset.djSignupMounted === '1') return;
+    if (!form) return;
+
+    const mode = options.mode || form.dataset.djSignupMode || 'signup';
+    if (form.dataset.djSignupMounted === '1' && form.dataset.djSignupMode === mode) return;
 
     const submitBtn = form.querySelector('button[type="submit"]');
+    const existingHost = document.getElementById('dj-signup-fields');
+    if (existingHost) existingHost.remove();
 
     Array.from(form.children).forEach((child) => {
       if (child === submitBtn) return;
-      if (child.id === 'signup-error' || child.classList.contains('login-error')) return;
+      if (child.id === 'signup-error' || child.id === 'signup-notice') return;
+      if (child.classList.contains('login-error') || child.classList.contains('login-notice')) return;
       child.remove();
     });
 
     const fieldsHost = document.createElement('div');
     fieldsHost.id = 'dj-signup-fields';
-    fieldsHost.innerHTML = this.fieldsHtml({ mode: 'signup' });
+    fieldsHost.innerHTML = this.fieldsHtml({ mode });
     if (submitBtn) form.insertBefore(fieldsHost, submitBtn);
     else form.appendChild(fieldsHost);
 
+    if (submitBtn && mode === 'complete') {
+      submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save profile &amp; open catalog';
+    }
+
     form.dataset.djSignupMounted = '1';
+    form.dataset.djSignupMode = mode;
   },
 
   mountProfile(containerId = 'dj-profile-fields') {
@@ -226,14 +245,19 @@ const DjSignupForm = {
     };
   },
 
-  collect() {
-    const p = (name) => this.fieldId(name, 'signup');
-    return {
-      ...this.collectFields('signup'),
-      email: this.fieldValue(p('email')),
-      password: this.fieldValue(p('password')),
+  collect(mode = 'signup') {
+    const p = (name) => this.fieldId(name, mode);
+    const payload = {
+      ...this.collectFields(mode),
       shareEmail: !!document.getElementById(p('share-email'))?.checked,
     };
+
+    if (mode === 'signup') {
+      payload.email = this.fieldValue(p('email'));
+      payload.password = this.fieldValue(p('password'));
+    }
+
+    return payload;
   },
 
   collectProfile() {
@@ -241,6 +265,46 @@ const DjSignupForm = {
       ...this.collectFields('profile'),
       shareEmail: !!document.getElementById('share-email-toggle')?.checked,
     };
+  },
+
+  async prefillFromSession(mode = 'complete') {
+    if (typeof HideawayAuth === 'undefined') return;
+
+    const supabase = await HideawayAuth.init();
+    const { data } = await supabase.auth.getSession();
+    const session = data.session;
+    if (!session) return;
+
+    const meta = session.user.user_metadata || {};
+    const pending = meta.dj_profile;
+    const p = (name) => this.fieldId(name, mode);
+    const setValue = (name, value) => {
+      const el = document.getElementById(p(name));
+      if (el && value) el.value = value;
+    };
+
+    if (!pending || typeof pending !== 'object') {
+      setValue('contact-email', session.user.email || '');
+      return;
+    }
+
+    setValue('first-name', pending.first_name || pending.firstName || '');
+    setValue('last-name', pending.last_name || pending.lastName || '');
+    setValue('program-name', pending.program_name || pending.programName || '');
+    setValue('program-format', pending.program_format || pending.programFormat || '');
+    setValue('program-days', pending.program_days || pending.programDays || '');
+    setValue('program-start', pending.program_start_time || pending.programStartTime || '');
+    setValue('program-end', pending.program_end_time || pending.programEndTime || '');
+    setValue('program-timezone', pending.program_timezone || pending.programTimezone || '');
+    setValue('program-website', pending.program_website || pending.programWebsite || '');
+    setValue('station-call', pending.station_call_letters || pending.stationCallLetters || '');
+    setValue('station-frequency', pending.station_frequency || pending.stationFrequency || '');
+    setValue('state', pending.state || '');
+    setValue('station-website', pending.station_website || pending.stationWebsite || '');
+    setValue('contact-email', pending.contact_email || pending.contactEmail || session.user.email || '');
+
+    const shareToggle = document.getElementById(p('share-email'));
+    if (shareToggle) shareToggle.checked = !!(pending.share_email ?? pending.shareEmail);
   },
 
   fillFromDj(dj) {

@@ -167,13 +167,79 @@ const DjAuth = {
     return this._loadDjProfile(supabase, session.user.id);
   },
 
+  async needsProfileCompletion() {
+    const supabase = await this._getSupabase();
+    const { data } = await supabase.auth.getSession();
+    const session = data.session;
+    if (!session) return false;
+
+    const profileRow = await this._loadDjProfile(supabase, session.user.id);
+    if (profileRow?.profile_complete) return false;
+
+    const metaRow = this._metadataToProfileRow(session.user.user_metadata || {}, session);
+    return !metaRow;
+  },
+
+  async saveProfileFromFields(fields) {
+    const supabase = await this._getSupabase();
+    const { data } = await supabase.auth.getSession();
+    const session = data.session;
+    if (!session) throw new Error('Sign in first, then finish your DJ profile.');
+
+    const payload = this.fieldsToPayload(fields);
+    if (!payload.firstName || !payload.lastName || !payload.programName || !payload.stationCallLetters) {
+      throw new Error('First name, last name, program name, and station call letters are required.');
+    }
+
+    const row = this.profileToRow({
+      ...payload,
+      contactEmail: payload.contactEmail || session.user.email
+    });
+
+    const djProfileMeta = {
+      first_name: row.first_name,
+      last_name: row.last_name,
+      program_name: row.program_name,
+      program_format: row.program_format,
+      station_call_letters: row.station_call_letters,
+      station_frequency: row.station_frequency,
+      state: row.state,
+      station_website: row.station_website,
+      program_website: row.program_website,
+      program_start_time: row.program_start_time,
+      program_end_time: row.program_end_time,
+      program_timezone: row.program_timezone,
+      program_days: row.program_days,
+      contact_email: row.contact_email,
+      share_email: row.share_email
+    };
+
+    await supabase.auth.updateUser({
+      data: {
+        ...session.user.user_metadata,
+        member_type: 'dj',
+        display_name: [row.first_name, row.last_name].filter(Boolean).join(' ') || session.user.email.split('@')[0],
+        dj_profile: djProfileMeta
+      }
+    });
+
+    const { error: profileError } = await supabase.from('dj_profiles').upsert({
+      id: session.user.id,
+      ...row
+    }, { onConflict: 'id' });
+    if (profileError) throw profileError;
+
+    const { data: refreshed } = await supabase.auth.getSession();
+    return this.completeSessionSetup(refreshed.session || session);
+  },
+
   async completeSessionSetup(session) {
     const supabase = await this._getSupabase();
     await this._ensureMemberProfile(supabase, session, 'dj');
 
     const profileRow = await this._ensureDjProfileFromMetadata(supabase, session);
     if (!profileRow?.profile_complete) {
-      throw new Error('DJ profile is incomplete. Use the sign-up tab or contact support.');
+      throw new Error('PROFILE_INCOMPLETE');
     }
 
     const payload = session.user.user_metadata?.dj_profile || profileRow;
@@ -284,7 +350,14 @@ const DjAuth = {
       throw error;
     }
 
-    return this.completeSessionSetup(data.session);
+    try {
+      return await this.completeSessionSetup(data.session);
+    } catch (err) {
+      if (String(err.message) === 'PROFILE_INCOMPLETE') {
+        throw new Error('PROFILE_INCOMPLETE');
+      }
+      throw err;
+    }
   },
 
   async signup(fields) {

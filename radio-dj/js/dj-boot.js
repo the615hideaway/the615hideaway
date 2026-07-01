@@ -31,6 +31,12 @@ const DjBoot = {
         HideawayAuth.clearAuthHash();
         return session;
       } catch (err) {
+        if (String(err.message) === 'PROFILE_INCOMPLETE') {
+          DjBoot._needsProfileCompletion = true;
+          DjBoot._confirmationMessage = 'You are signed in. Finish your DJ profile below to open the Radio Now catalog.';
+          HideawayAuth.clearAuthHash();
+          return session;
+        }
         console.warn('DJ session setup:', err.message);
       }
     }
@@ -46,5 +52,15 @@ const DjBoot = {
     const message = DjBoot._confirmationMessage || '';
     DjBoot._confirmationMessage = '';
     return message;
+  },
+
+  needsProfileCompletion() {
+    return !!DjBoot._needsProfileCompletion;
+  },
+
+  consumeNeedsProfileCompletion() {
+    const flag = !!DjBoot._needsProfileCompletion;
+    DjBoot._needsProfileCompletion = false;
+    return flag;
   }
 };
