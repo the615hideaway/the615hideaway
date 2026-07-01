@@ -62,5 +62,33 @@ const DjBoot = {
     const flag = !!DjBoot._needsProfileCompletion;
     DjBoot._needsProfileCompletion = false;
     return flag;
+  },
+
+  async bootPage(options = {}) {
+    const { authUi, onAuthenticated, onGuest } = options;
+
+    await this.ready();
+
+    if (authUi) {
+      if (typeof authUi.showBootMessage === 'function') {
+        authUi.showBootMessage(onAuthenticated);
+      }
+      if (typeof authUi.checkAfterBoot === 'function') {
+        const needsProfile = await authUi.checkAfterBoot();
+        if (needsProfile) {
+          onGuest?.();
+          return;
+        }
+      }
+    } else if (typeof DjAuth !== 'undefined' && DjAuth.restoreSession) {
+      await DjAuth.restoreSession();
+    }
+
+    if (typeof DjAuth !== 'undefined' && DjAuth.isAuthenticated()) {
+      onAuthenticated?.();
+      return;
+    }
+
+    onGuest?.();
   }
 };

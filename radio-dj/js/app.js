@@ -910,15 +910,10 @@
   } else {
     const authUi = DjAuthUI.init({ onAuthenticated: showApp });
     SiteNav.bindLogout(logoutBtn, showLogin);
-    DjBoot.ready().then(async () => {
-      authUi.showBootMessage(showApp);
-      const needsProfile = await authUi.checkAfterBoot();
-      if (needsProfile) {
-        showLogin();
-        return;
-      }
-      if (DjAuth.isAuthenticated()) showApp();
-      else showLogin();
+    DjBoot.bootPage({
+      authUi,
+      onAuthenticated: showApp,
+      onGuest: showLogin,
     });
   }
 

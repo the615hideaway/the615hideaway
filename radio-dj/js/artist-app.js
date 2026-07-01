@@ -695,7 +695,7 @@
     }
   }
 
-  DjAuthUI.init({ onAuthenticated: showApp });
+  const authUi = DjAuthUI.init({ onAuthenticated: showApp });
   SiteNav.bindLogout(logoutBtn, showLogin);
 
   clearQueueBtn.addEventListener('click', () => {
@@ -768,6 +768,9 @@
     playCurrentQueueTrack();
   });
 
-  if (isAuthenticated()) showApp();
-  else showLogin();
+  DjBoot.bootPage({
+    authUi,
+    onAuthenticated: showApp,
+    onGuest: showLogin,
+  });
 })();

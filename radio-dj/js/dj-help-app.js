@@ -144,9 +144,12 @@
     }
   });
 
-  DjAuthUI.init({ onAuthenticated: showApp });
+  const authUi = DjAuthUI.init({ onAuthenticated: showApp });
   SiteNav.bindLogout(logoutBtn, showLogin);
 
-  if (isAuthenticated()) showApp();
-  else showLogin();
+  DjBoot.bootPage({
+    authUi,
+    onAuthenticated: showApp,
+    onGuest: showLogin,
+  });
 })();

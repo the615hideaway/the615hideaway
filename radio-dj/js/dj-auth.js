@@ -78,16 +78,28 @@ const DjAuth = {
   },
 
   saveSession(data) {
-    sessionStorage.setItem(CONFIG.djSessionKey, JSON.stringify({
+    const payload = JSON.stringify({
       token: data.token || '',
       dj: data.dj
-    }));
+    });
+    sessionStorage.setItem(CONFIG.djSessionKey, payload);
+    try {
+      localStorage.setItem(CONFIG.djSessionKey, payload);
+    } catch (_) {}
     sessionStorage.removeItem(CONFIG.authKey);
     sessionStorage.removeItem(CONFIG.artistSessionKey);
   },
 
   getSession() {
-    const raw = sessionStorage.getItem(CONFIG.djSessionKey);
+    let raw = sessionStorage.getItem(CONFIG.djSessionKey);
+    if (!raw) {
+      raw = localStorage.getItem(CONFIG.djSessionKey);
+      if (raw) {
+        try {
+          sessionStorage.setItem(CONFIG.djSessionKey, raw);
+        } catch (_) {}
+      }
+    }
     if (!raw) return null;
     try {
       return JSON.parse(raw);
@@ -110,6 +122,7 @@ const DjAuth = {
 
   async logout() {
     sessionStorage.removeItem(CONFIG.djSessionKey);
+    localStorage.removeItem(CONFIG.djSessionKey);
     sessionStorage.removeItem(CONFIG.authKey);
     sessionStorage.removeItem(CONFIG.artistSessionKey);
     try {
@@ -455,7 +468,7 @@ const DjAuth = {
     const session = this.getSession();
     if (!session) return;
     session.dj = { ...session.dj, ...dj };
-    sessionStorage.setItem(CONFIG.djSessionKey, JSON.stringify(session));
+    this.saveSession(session);
   },
 
   async updateDjProfileRemote(fields) {

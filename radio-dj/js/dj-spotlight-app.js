@@ -230,8 +230,11 @@
     appShell?.classList.add('hidden');
   }
 
-  DjAuthUI.init({ onAuthenticated: showApp });
+  const authUi = DjAuthUI.init({ onAuthenticated: showApp });
   SiteNav.bindLogout(logoutBtn, showLogin);
-  if (DjAuth.isAuthenticated()) showApp();
-  else showLogin();
+  DjBoot.bootPage({
+    authUi,
+    onAuthenticated: showApp,
+    onGuest: showLogin,
+  });
 })();

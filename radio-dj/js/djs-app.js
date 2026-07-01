@@ -179,6 +179,8 @@
     filterDjs();
   });
 
-  if (AccountAuth.isAuthenticated()) showApp();
-  else showLogin();
+  DjBoot.bootPage({
+    onAuthenticated: showApp,
+    onGuest: showLogin,
+  });
 })();

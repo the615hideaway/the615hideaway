@@ -109,7 +109,7 @@
     }
   }
 
-  DjAuthUI.init({ onAuthenticated: showApp });
+  const authUi = DjAuthUI.init({ onAuthenticated: showApp });
   SiteNav.bindLogout(logoutBtn, showLogin);
 
   artistSearch.addEventListener('input', Utils.debounce(filterArtists, 180));
@@ -118,6 +118,9 @@
     filterArtists();
   });
 
-  if (isAuthenticated()) showApp();
-  else showLogin();
+  DjBoot.bootPage({
+    authUi,
+    onAuthenticated: showApp,
+    onGuest: showLogin,
+  });
 })();

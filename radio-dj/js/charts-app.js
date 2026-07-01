@@ -3,7 +3,6 @@
   const monthEl = document.getElementById('charts-month');
   const logoutBtn = document.getElementById('logout-btn');
 
-  SiteNav.init('charts');
   SiteNav.bindLogout(logoutBtn, () => SiteNav.init('charts'));
 
   async function init() {
@@ -18,5 +17,8 @@
     }
   }
 
-  init();
+  DjBoot.bootPage({
+    onAuthenticated: () => SiteNav.init('charts'),
+    onGuest: () => SiteNav.init('charts'),
+  }).then(init);
 })();
