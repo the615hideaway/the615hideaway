@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="/radio-dj/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Radio Now — Submit a new song.">
+  <title>Submit Song — Radio Now</title>
+  <link rel="icon" href="assets/logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="artist-portal-body">
+
+  <div id="app-shell" class="app-shell hidden">
+    <div class="artist-portal-chrome">
+      <a href="artist-dashboard.html" class="artist-portal-chrome-brand">
+        <img src="assets/logo.png" alt="" class="artist-portal-chrome-logo">
+        <span>Radio Now</span>
+      </a>
+      <div class="artist-portal-chrome-actions">
+        <a href="artist-promo.html" class="artist-portal-chrome-link">Your Music</a>
+        <a href="charts.html" class="artist-portal-chrome-link">Charts</a>
+        <span id="artist-welcome" class="artist-portal-welcome hidden"></span>
+        <button type="button" class="btn btn-ghost btn-sm" id="logout-btn" aria-label="Log out">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+      </div>
+    </div>
+
+    <nav class="artist-portal-nav" data-artist-portal-nav></nav>
+
+    <main class="artist-portal-page">
+      <header class="artist-portal-hero">
+        <p class="artist-portal-eyebrow">Submit</p>
+        <h1 id="page-title">Submit a new song</h1>
+        <p id="page-copy" class="artist-portal-copy">Upload MP3 and cover art via the Google Form. Add WAV files to our shared folder separately.</p>
+      </header>
+
+      <section class="artist-portal-card">
+        <p class="artist-portal-card-note" id="song-submit-note">After you submit, refresh the DJ catalog — your song should appear right away.</p>
+        <ol class="artist-portal-steps" id="song-submit-steps">
+          <li>Open the submission form and fill in song details.</li>
+          <li>Upload <strong>MP3</strong> and <strong>cover art</strong> on the form.</li>
+          <li>Add <strong>WAV</strong> to our shared folder named <em>Song Title - Artist Name.wav</em> — stations request WAV directly; we don&apos;t host them in DJ downloads.</li>
+          <li>Refresh the catalog after submitting — your song should appear right away.</li>
+        </ol>
+        <a id="song-google-form-open-link" class="btn btn-primary btn-lg btn-full" href="https://forms.gle/zFExL6otU1e7hJF59" target="_blank" rel="noopener">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          Open song submission form
+        </a>
+        <p class="field-help">Uploads are free this week. No technical steps on your end.</p>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/demo.js"></script>  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/supabase-auth.js"></script>
+  <script src="js/dj-boot.js"></script>
+  <script src="js/dj-auth.js"></script>
+  <script src="js/artist-auth.js"></script>
+  <script src="js/account-auth.js"></script>
+  <script src="js/artist-auth-ui.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/artist-portal-nav.js"></script>
+  <script src="js/artist-portal-auth.js"></script>
+  <script src="js/artist-submit-app.js"></script>
+</body>
+</html>

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="/radio-dj/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Radio Now G현 Artist dashboard. See who downloaded your music.">
+  <title>Artist Dashboard G현 Radio Now</title>
+  <link rel="icon" href="assets/logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <div id="login-gate" class="login-gate">
+    <div id="turnkey-pitch-login" class="turnkey-pitch-login-wrap" data-page="artist"></div>
+
+    <div class="login-gate-actions">
+    <div class="login-auth-column">
+      <nav class="account-role-picker account-role-picker--triple" aria-label="Choose account type">
+        <a href="index.html" class="account-role-card">
+          <i class="fa-solid fa-tower-broadcast" aria-hidden="true"></i>
+          <span class="account-role-title">DJ Account</span>
+          <span class="account-role-desc">Browse &amp; download music</span>
+        </a>
+        <a href="artist-dashboard.html" class="account-role-card is-active" aria-current="page">
+          <i class="fa-solid fa-microphone" aria-hidden="true"></i>
+          <span class="account-role-title">Artist Account</span>
+          <span class="account-role-desc">Promo ZIPs &amp; spins</span>
+        </a>
+        <a href="artist-dashboard.html#label-signup" class="account-role-card account-role-card--label">
+          <i class="fa-solid fa-building" aria-hidden="true"></i>
+          <span class="account-role-title">Label Account</span>
+          <span class="account-role-desc">Roster, submit songs</span>
+        </a>
+      </nav>
+
+      <div class="login-card login-card--artist">
+        <div class="brand-lockup brand-lockup--centered brand-lockup--signup">
+          <img src="assets/logo.png" alt="(615) Hideaway Entertainment" class="brand-logo brand-logo--large">
+          <div class="brand-text">
+            <h1>Radio Now</h1>
+            <p>(615) Hideaway Entertainment</p>
+          </div>
+        </div>
+        <p class="login-account-badge login-account-badge--artist"><i class="fa-solid fa-microphone"></i> Artist &amp; label sign in</p>
+
+        <div class="auth-tabs auth-tabs--triple" role="tablist" aria-label="Artist and label accounts">
+        <button type="button" class="auth-tab active" data-auth-tab="login" role="tab" aria-selected="true">Sign In</button>
+        <button type="button" class="auth-tab" data-auth-tab="signup" role="tab" aria-selected="false">Artist Sign Up</button>
+        <button type="button" class="auth-tab" data-auth-tab="label-signup" role="tab" aria-selected="false">Label Sign Up</button>
+      </div>
+
+      <form id="login-form" class="auth-panel" data-auth-panel="login">
+        <div class="login-error" id="login-error"></div>
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" placeholder="you@label.com" autocomplete="email" required>
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" placeholder="Enter password" autocomplete="current-password" required>
+        <button type="submit" class="btn btn-primary btn-full">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          Artist Sign In
+        </button>
+      </form>
+
+      <form id="signup-form" class="auth-panel hidden" data-auth-panel="signup">
+        <div class="login-error" id="signup-error"></div>
+        <p class="auth-panel-note">Use the <strong>Artist Name</strong> exactly as it appears on Radio Now, or the email your label listed to <strong>claim</strong> a profile they created.</p>
+        <label for="signup-artist-name">Artist Name</label>
+        <input type="text" id="signup-artist-name" placeholder="As listed on Radio Now" autocomplete="organization" required>
+        <label for="signup-email">Email</label>
+        <input type="email" id="signup-email" placeholder="you@label.com" autocomplete="email" required>
+        <label for="signup-password">Password</label>
+        <input type="password" id="signup-password" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" required>
+        <label for="signup-password-confirm">Confirm password</label>
+        <input type="password" id="signup-password-confirm" placeholder="Re-enter password" autocomplete="new-password" minlength="8" required>
+        <button type="submit" class="btn btn-primary btn-full">
+          <i class="fa-solid fa-user-plus"></i>
+          Create Artist Account
+        </button>
+      </form>
+
+      <form id="label-signup-form" class="auth-panel hidden" data-auth-panel="label-signup">
+        <div class="login-error" id="label-signup-error"></div>
+        <p class="auth-panel-note">Use the <strong>Label Name</strong> exactly as it appears on Radio Now (e.g. 615 Hideaway Records).</p>
+        <label for="signup-label-name">Label Name</label>
+        <input type="text" id="signup-label-name" placeholder="As listed on Radio Now" autocomplete="organization" required>
+        <label for="label-signup-email">Email</label>
+        <input type="email" id="label-signup-email" placeholder="you@label.com" autocomplete="email" required>
+        <label for="label-signup-password">Password</label>
+        <input type="password" id="label-signup-password" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" required>
+        <label for="label-signup-password-confirm">Confirm password</label>
+        <input type="password" id="label-signup-password-confirm" placeholder="Re-enter password" autocomplete="new-password" minlength="8" required>
+        <button type="submit" class="btn btn-primary btn-full">
+          <i class="fa-solid fa-building"></i>
+          Create Label Account
+        </button>
+      </form>
+      </div>
+
+      <aside class="login-charts-card" aria-label="Public download charts">
+        <div class="login-charts-copy-block">
+          <p class="login-charts-eyebrow"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Public -+ No sign-in</p>
+          <h2 class="login-charts-title">See the charts</h2>
+          <p class="login-charts-copy">Top downloads this week and month G현 real DJ activity on Radio Now.</p>
+        </div>
+        <a href="charts.html" class="btn btn-secondary login-charts-btn">
+          <i class="fa-solid fa-chart-simple" aria-hidden="true"></i>
+          View Top 50 Charts
+        </a>
+      </aside>
+    </div>
+    </div>
+  </div>
+
+  <div id="app-shell" class="app-shell hidden">
+    <header class="site-header">
+      <div class="header-inner">
+        <a href="index.html" class="brand">
+          <img src="assets/logo.png" alt="(615) Hideaway Entertainment" class="brand-logo">
+          <div class="brand-text">
+            <span class="brand-name">Radio Now</span>
+            <span class="brand-tag">(615) Hideaway Entertainment</span>
+          </div>
+        </a>
+        <nav class="site-nav" data-site-nav data-nav-active="artistDashboard" aria-label="Main navigation"></nav>
+        <div class="header-actions">
+          <span id="dj-welcome" class="dj-welcome hidden"></span>
+          <span id="artist-welcome" class="dj-welcome hidden"></span>
+          <button class="btn btn-ghost" id="logout-btn">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            Log Out
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div id="demo-banner" class="demo-banner hidden" role="status">
+      <div class="demo-banner-copy">
+        <strong>Demo mode</strong> G현 Read-only preview for <strong>David Parmley</strong>. Charts, history, and promo folders are real sample data.
+      </div>
+      <a href="artist-dashboard.html" class="btn btn-secondary btn-sm">Create artist account</a>
+    </div>
+
+    <main class="dj-dashboard-page artist-dashboard-page">
+      <section class="dj-dashboard-hero">
+        <div>
+          <p class="dj-dashboard-eyebrow">Artist Dashboard</p>
+          <h1 id="artist-display-name">Your artist dashboard</h1>
+          <p id="dashboard-subtitle" class="dj-dashboard-copy">Download your turn-key promo folders and track when DJs grab your music on Radio Now.</p>
+        </div>
+      </section>
+
+      <section class="charts-panel charts-panel--dashboard charts-panel--artist-share" aria-label="Your top songs G현 share on social">
+        <div class="charts-share-header">
+          <div>
+            <h2 class="charts-share-title"><i class="fa-solid fa-share-nodes"></i> Your Radio Now charts</h2>
+            <p class="charts-share-copy">Screenshot week &amp; month rankings to post on social G현 show DJs and fans your momentum.</p>
+          </div>
+          <span class="charts-share-brand">Radio Now</span>
+        </div>
+        <div class="charts-share-grid">
+          <div class="charts-block charts-block--share">
+            <div class="charts-block-header">
+              <h2><i class="fa-solid fa-chart-line"></i> Top This Week</h2>
+            </div>
+            <div id="dashboard-chart-week"></div>
+          </div>
+          <div class="charts-block charts-block--share">
+            <div class="charts-block-header">
+              <h2><i class="fa-solid fa-chart-simple"></i> Top This Month</h2>
+            </div>
+            <div id="dashboard-chart-month"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="dj-panel artist-roster-panel hidden" id="label-roster-panel" aria-live="polite">
+        <div class="dj-panel-header">
+          <h2><i class="fa-solid fa-users"></i> Artist Roster</h2>
+        </div>
+        <p class="dj-panel-note">Create artist profiles for your roster. Artists can claim their profile later and keep chart history if they switch labels.</p>
+        <div id="label-roster-list"></div>
+        <form id="create-profile-form" class="create-profile-form dashboard-form">
+          <div class="login-error" id="create-profile-error"></div>
+          <div class="form-grid form-grid--two">
+            <div class="form-field">
+              <label for="create-profile-artist-name">Artist Name</label>
+              <input type="text" id="create-profile-artist-name" placeholder="As it will appear on Radio Now" required>
+            </div>
+            <div class="form-field">
+              <label for="create-profile-claim-email">Artist email <span class="label-optional">(for claim)</span></label>
+              <input type="email" id="create-profile-claim-email" placeholder="artist@email.com">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-secondary">
+            <i class="fa-solid fa-user-plus"></i>
+            Create Artist Profile
+          </button>
+        </form>
+      </section>
+
+      <section class="dj-panel artist-access-panel hidden" id="label-access-panel" aria-live="polite">
+        <div class="dj-panel-header">
+          <h2><i class="fa-solid fa-building"></i> Label Access</h2>
+        </div>
+        <p class="dj-panel-note">Labels you allow can submit songs and view spins. Remove access anytime G현 your chart history stays with you.</p>
+        <div id="label-access-list"></div>
+      </section>
+
+      <section class="dj-panel artist-chart-history-panel hidden" id="chart-history-panel" aria-live="polite">
+        <div class="dj-panel-header">
+          <h2><i class="fa-solid fa-trophy"></i> Chart Career History</h2>
+        </div>
+        <p class="dj-panel-note">Best Radio Now chart positions for your songs G현 use when building your next radio pitch sheet.</p>
+        <div id="chart-history-content"></div>
+      </section>
+
+      <section class="dj-panel artist-submit-panel hidden" id="song-submit-panel" aria-live="polite">
+        <div class="dj-panel-header">
+          <h2 id="song-submit-heading"><i class="fa-solid fa-cloud-arrow-up"></i> Submit a New Song</h2>
+        </div>
+        <p class="dj-panel-note">Fill out the form below and upload your files G현 everything goes straight to Radio Now. You can edit pending submissions later to group singles into a full album.</p>
+
+        <div id="song-submissions-list" class="song-submissions-list hidden"></div>
+
+        <form id="song-submit-form" class="song-submit-form dashboard-form dashboard-form--accessible dashboard-form--song-submit">
+          <input type="hidden" id="submit-editing-id" value="">
+          <div class="login-error" id="song-submit-error"></div>
+          <div class="song-submit-success hidden" id="song-submit-success"></div>
+
+          <fieldset class="song-form-section">
+            <legend>Song details</legend>
+            <div class="form-grid form-grid--two">
+              <div class="form-field">
+                <label for="submit-artist-name">Artist Name <span class="label-required">*</span></label>
+                <input type="text" id="submit-artist-name" list="submit-artist-options" placeholder="Artist as listed on Radio Now" required>
+                <datalist id="submit-artist-options"></datalist>
+              </div>
+              <div class="form-field">
+                <label for="submit-song-title">Song Title <span class="label-required">*</span></label>
+                <input type="text" id="submit-song-title" placeholder="Song title" required>
+              </div>
+              <div class="form-field">
+                <label for="submit-year">Year <span class="label-required">*</span></label>
+                <input type="text" id="submit-year" placeholder="2026" inputmode="numeric" required>
+              </div>
+              <div class="form-field">
+                <label for="submit-song-time">Song Time <span class="label-required">*</span></label>
+                <input type="text" id="submit-song-time" placeholder="3:45" required>
+              </div>
+              <div class="form-field">
+                <label for="submit-music-style">Music Style <span class="label-required">*</span></label>
+                <select id="submit-music-style" required></select>
+              </div>
+              <div class="form-field">
+                <label for="submit-songwriter">Songwriter <span class="label-required">*</span></label>
+                <input type="text" id="submit-songwriter" placeholder="Writer names" required>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="song-form-section">
+            <legend>Vocals &amp; musicians</legend>
+            <div class="form-grid form-grid--two">
+              <div class="form-field">
+                <label for="submit-featured-artist">Featured Artist</label>
+                <input type="text" id="submit-featured-artist" placeholder="Guest artist, if any">
+              </div>
+              <div class="form-field">
+                <label for="submit-lead-vocals">Lead Vocals <span class="label-required">*</span></label>
+                <input type="text" id="submit-lead-vocals" placeholder="Lead singer name" required>
+              </div>
+              <div class="form-field">
+                <label for="submit-harmony-1">Harmony Vocals 1</label>
+                <input type="text" id="submit-harmony-1" placeholder="Harmony singer">
+              </div>
+              <div class="form-field">
+                <label for="submit-harmony-2">Harmony Vocals 2</label>
+                <input type="text" id="submit-harmony-2" placeholder="Harmony singer">
+              </div>
+              <div class="form-field">
+                <label for="submit-harmony-3">Harmony Vocals 3</label>
+                <input type="text" id="submit-harmony-3" placeholder="Harmony singer">
+              </div>
+              <div class="form-field">
+                <label for="submit-harmony-4">Harmony Vocals 4</label>
+                <input type="text" id="submit-harmony-4" placeholder="Harmony singer">
+              </div>
+            </div>
+            <p class="field-help">Instrument players G현 use format <strong>Banjo - Player Name</strong></p>
+            <div class="form-grid form-grid--two">
+              <div class="form-field"><label for="submit-instrument-1">Instrument Player 1</label><input type="text" id="submit-instrument-1" placeholder="Banjo - Scott Vestal"></div>
+              <div class="form-field"><label for="submit-instrument-2">Instrument Player 2</label><input type="text" id="submit-instrument-2" placeholder="Guitar - Jim Hurst"></div>
+              <div class="form-field"><label for="submit-instrument-3">Instrument Player 3</label><input type="text" id="submit-instrument-3" placeholder="Mandolin - Seth Taylor"></div>
+              <div class="form-field"><label for="submit-instrument-4">Instrument Player 4</label><input type="text" id="submit-instrument-4" placeholder="Fiddle - Tim Crouch"></div>
+              <div class="form-field"><label for="submit-instrument-5">Instrument Player 5</label><input type="text" id="submit-instrument-5" placeholder="Bass - Dave Roe"></div>
+              <div class="form-field"><label for="submit-instrument-6">Instrument Player 6</label><input type="text" id="submit-instrument-6" placeholder="Dobro - Jeff Partin"></div>
+              <div class="form-field"><label for="submit-instrument-7">Instrument Player 7</label><input type="text" id="submit-instrument-7" placeholder="Instrument - Player"></div>
+              <div class="form-field"><label for="submit-instrument-8">Instrument Player 8</label><input type="text" id="submit-instrument-8" placeholder="Instrument - Player"></div>
+            </div>
+          </fieldset>
+
+          <fieldset class="song-form-section">
+            <legend>Release info</legend>
+            <div class="form-grid form-grid--two">
+              <div class="form-field" id="submit-label-field">
+                <label for="submit-record-label">Record Label <span class="label-required">*</span></label>
+                <label class="checkbox-field checkbox-field--inline" id="submit-independent-wrap">
+                  <input type="checkbox" id="submit-independent">
+                  <span>Independent (not on a label)</span>
+                </label>
+                <input type="text" id="submit-record-label" placeholder="615 Hideaway Records">
+              </div>
+              <div class="form-field">
+                <label for="submit-release-type">Release type</label>
+                <select id="submit-release-type">
+                  <option value="single">Single</option>
+                  <option value="album_track">Album track</option>
+                </select>
+              </div>
+              <div class="form-field form-field--wide" id="submit-album-field">
+                <label for="submit-album-name">Album name</label>
+                <input type="text" id="submit-album-name" placeholder="e.g. So, What'd I Miss?">
+                <p class="field-help" id="submit-album-help">Optional for singles G현 use the same album name on each track when building a full album later.</p>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="song-form-section">
+            <legend>Press blurb</legend>
+            <div class="form-field">
+              <label for="submit-description">Description <span class="label-required">*</span></label>
+              <textarea id="submit-description" rows="6" placeholder="One paragraph about the release for DJs and radio" required></textarea>
+            </div>
+          </fieldset>
+
+          <fieldset class="song-form-section">
+            <legend>Audio &amp; cover art <span class="label-required">*</span></legend>
+            <div class="form-grid form-grid--two form-grid--uploads" id="song-upload-fields"></div>
+          </fieldset>
+
+          <fieldset class="song-form-section">
+            <legend>Optional contact</legend>
+            <div class="form-grid form-grid--two">
+              <div class="form-field">
+                <label for="submit-website">Website</label>
+                <input type="url" id="submit-website" placeholder="https://">
+              </div>
+              <div class="form-field">
+                <label for="submit-contact-email">Contact email</label>
+                <input type="email" id="submit-contact-email" placeholder="promo@label.com">
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="song-form-actions">
+            <button type="submit" class="btn btn-primary btn-lg" id="song-submit-btn">
+              <i class="fa-solid fa-paper-plane"></i>
+              Submit for Review
+            </button>
+            <button type="button" class="btn btn-secondary btn-lg hidden" id="song-cancel-edit-btn">
+              Cancel edit
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="dj-panel artist-promo-panel" id="artist-promo-panel" aria-live="polite">
+        <div class="dj-panel-header">
+          <h2><i class="fa-solid fa-folder-open"></i> Your Promo Folders</h2>
+        </div>
+        <p class="dj-panel-note">Download ZIPs to share with DJs who are not on Radio Now.</p>
+        <p id="artist-promo-setup-notice" class="queue-help queue-warning hidden">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          ZIP builds in your browser. If downloads fail, confirm Apps Script is deployed (see <code>AUDIO-FIX-STEPS.txt</code>).
+        </p>
+        <div id="artist-promo-content"></div>
+      </section>
+
+      <section class="dj-dashboard-stats" id="dashboard-stats"></section>
+
+      <section class="dj-dashboard-grid">
+        <div class="dj-panel dj-panel--wide artist-panel--full">
+          <div class="dj-panel-header">
+          <h2>Spins</h2>
+          <span class="dj-panel-meta" id="history-count"></span>
+        </div>
+        <p class="dj-panel-note">Each spin (DJ download) shows the station and program details. A DJ contact email appears only if they opt in to share it.</p>
+          <div id="dashboard-history"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="js/vendor/jspdf.umd.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/pitch.js"></script>
+  <script src="js/demo.js"></script>  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/supabase-auth.js"></script>
+  <script src="js/dj-boot.js"></script>
+  <script src="js/dj-auth.js"></script>
+  <script src="js/artist-auth.js"></script>
+  <script src="js/account-auth.js"></script>
+  <script src="js/artist-auth-ui.js"></script>
+  <script src="js/dj-auth-ui.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/artist-activity.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/file-upload-field.js"></script>
+  <script src="js/song-submit-config.js"></script>
+  <script src="js/one-sheet.js"></script>
+  <script src="js/database.js"></script>
+  <script src="js/artist-dashboard-app.js"></script>
+</body>
+</html>

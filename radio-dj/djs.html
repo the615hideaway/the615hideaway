@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="/radio-dj/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Radio Now — DJ directory for signed-in members.">
+  <title>DJs — Radio Now</title>
+  <link rel="icon" href="assets/logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <div id="login-gate" class="login-gate">
+    <div class="login-auth-column">
+      <nav class="account-role-picker" aria-label="Choose account type">
+        <button type="button" class="account-role-card is-active" data-member-role="dj" aria-pressed="true">
+          <i class="fa-solid fa-tower-broadcast" aria-hidden="true"></i>
+          <span class="account-role-title">DJ Account</span>
+          <span class="account-role-desc">Browse &amp; download music</span>
+        </button>
+        <button type="button" class="account-role-card" data-member-role="artist" aria-pressed="false">
+          <i class="fa-solid fa-microphone" aria-hidden="true"></i>
+          <span class="account-role-title">Artist Account</span>
+          <span class="account-role-desc">Promo ZIPs &amp; radio stats</span>
+        </button>
+      </nav>
+
+      <div class="login-card login-card--dj" data-member-panel="dj">
+        <div class="brand-lockup brand-lockup--centered brand-lockup--signup">
+          <img src="assets/logo.png" alt="(615) Hideaway Entertainment" class="brand-logo brand-logo--large">
+          <div class="brand-text">
+            <h1>Radio Now</h1>
+            <p>(615) Hideaway Entertainment</p>
+          </div>
+        </div>
+        <p class="login-copy">Sign in to browse the DJ directory. Station and program profiles are visible to signed-in members only.</p>
+        <div class="login-error" id="dj-login-error"></div>
+        <form id="dj-login-form">
+          <label for="dj-login-email">Email</label>
+          <input type="email" id="dj-login-email" placeholder="you@station.com" autocomplete="email" required>
+          <label for="dj-login-password">Password</label>
+          <input type="password" id="dj-login-password" placeholder="Enter password" autocomplete="current-password" required>
+          <button type="submit" class="btn btn-primary btn-full">
+            <i class="fa-solid fa-right-to-bracket"></i>
+            DJ Sign In
+          </button>
+        </form>
+        <p class="login-demo-links">Need an account? <a href="index.html">Create a DJ account</a></p>
+      </div>
+
+      <div class="login-card login-card--artist hidden" data-member-panel="artist">
+        <div class="brand-lockup brand-lockup--centered brand-lockup--signup">
+          <img src="assets/logo.png" alt="(615) Hideaway Entertainment" class="brand-logo brand-logo--large">
+          <div class="brand-text">
+            <h1>Radio Now</h1>
+            <p>(615) Hideaway Entertainment</p>
+          </div>
+        </div>
+        <p class="login-copy">Artists and labels can sign in to see who is programming bluegrass and Americana on Radio Now.</p>
+        <div class="login-error" id="artist-login-error"></div>
+        <form id="artist-login-form">
+          <label for="artist-login-email">Email</label>
+          <input type="email" id="artist-login-email" placeholder="you@label.com" autocomplete="email" required>
+          <label for="artist-login-password">Password</label>
+          <input type="password" id="artist-login-password" placeholder="Enter password" autocomplete="current-password" required>
+          <button type="submit" class="btn btn-primary btn-full">
+            <i class="fa-solid fa-right-to-bracket"></i>
+            Artist Sign In
+          </button>
+        </form>
+        <p class="login-demo-links">Need an account? <a href="artist-dashboard.html">Create an artist account</a></p>
+      </div>
+    </div>
+  </div>
+
+  <div id="app-shell" class="app-shell hidden">
+    <header class="site-header">
+      <div class="header-inner">
+        <a href="index.html" class="brand">
+          <img src="assets/logo.png" alt="(615) Hideaway Entertainment" class="brand-logo">
+          <div class="brand-text">
+            <span class="brand-name">Radio Now</span>
+            <span class="brand-tag">(615) Hideaway Entertainment</span>
+          </div>
+        </a>
+        <nav class="site-nav" data-site-nav data-nav-active="djs" aria-label="Main navigation"></nav>
+        <div class="header-actions">
+          <span id="dj-welcome" class="dj-welcome hidden"></span>
+          <span id="artist-welcome" class="dj-welcome hidden"></span>
+          <button class="btn btn-ghost" id="logout-btn">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            Log Out
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="djs-page">
+      <section class="dj-dashboard-hero">
+        <div>
+          <p class="dj-dashboard-eyebrow">Member directory</p>
+          <h1>Radio Now DJs</h1>
+          <p class="dj-dashboard-copy">Browse station and program profiles. Tap a row for full details. Email appears only when a DJ has chosen to share it.</p>
+        </div>
+      </section>
+
+      <section class="toolbar artists-toolbar">
+        <div class="stats-row">
+          <div class="stat"><span id="stat-djs">0</span><label>DJs</label></div>
+        </div>
+        <div class="filter-row">
+          <div class="search-wrap">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="search" id="dj-search" placeholder="Search DJs, stations, programs…" autocomplete="off">
+          </div>
+          <button class="btn btn-secondary" id="clear-search-btn" type="button">Clear</button>
+        </div>
+      </section>
+
+      <section id="dj-detail-panel" class="detail-panel hidden" aria-live="polite"></section>
+      <section id="dj-directory-list" class="dj-directory-list" aria-live="polite"></section>
+    </main>
+  </div>
+
+  <script src="js/config.js"></script>  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/supabase-auth.js"></script>
+  <script src="js/dj-boot.js"></script>
+  <script src="js/dj-auth.js"></script>
+  <script src="js/artist-auth.js"></script>
+  <script src="js/account-auth.js"></script>
+  <script src="js/dj-auth-ui.js"></script>
+  <script src="js/artist-auth-ui.js"></script>
+  <script src="js/member-auth-ui.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/dj-directory.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/djs-app.js"></script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="/radio-dj/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Radio Now — DJ WAV requests for artists and labels.">
+  <title>DJ Requests — Radio Now</title>
+  <link rel="icon" href="assets/logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="artist-portal-body">
+
+  <div id="app-shell" class="app-shell hidden">
+    <div class="artist-portal-chrome">
+      <a href="artist-dashboard.html" class="artist-portal-chrome-brand">
+        <img src="assets/logo.png" alt="" class="artist-portal-chrome-logo">
+        <span>Radio Now</span>
+      </a>
+      <div class="artist-portal-chrome-actions">
+        <a href="artist-promo.html" class="artist-portal-chrome-link">Your Music</a>
+        <a href="charts.html" class="artist-portal-chrome-link">Charts</a>
+        <span id="artist-welcome" class="artist-portal-welcome hidden"></span>
+        <button type="button" class="btn btn-ghost btn-sm" id="logout-btn" aria-label="Log out">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+      </div>
+    </div>
+
+    <nav class="artist-portal-nav" data-artist-portal-nav></nav>
+
+    <main class="artist-portal-page">
+      <header class="artist-portal-hero">
+        <p class="artist-portal-eyebrow">For artists &amp; labels</p>
+        <h1>DJ WAV requests</h1>
+        <p class="artist-portal-copy">When a DJ needs a broadcast WAV for airplay, Radio Now sends you a clear request email. Here is what it means and how to reply.</p>
+      </header>
+
+      <section class="artist-portal-card artist-dj-requests-card">
+        <h2 class="artist-portal-card-title"><i class="fa-solid fa-envelope"></i> What is this?</h2>
+        <p class="artist-portal-card-note">DJs browse and download <strong>MP3</strong> turn-key promo folders from Radio Now. Some stations still need a <strong>broadcast WAV</strong> for their automation system. When a DJ clicks <em>Send WAV request for me</em>, we email you on their behalf with the song details and the DJ’s contact info.</p>
+      </section>
+
+      <section class="artist-portal-card artist-dj-requests-card">
+        <h2 class="artist-portal-card-title"><i class="fa-solid fa-inbox"></i> What the email looks like</h2>
+        <p class="artist-portal-card-note">Check your inbox (and spam folder) for a message like this:</p>
+        <div class="artist-dj-request-example" id="dj-request-example"></div>
+      </section>
+
+      <section class="artist-portal-card artist-dj-requests-card">
+        <h2 class="artist-portal-card-title"><i class="fa-solid fa-reply"></i> How to reply (3 steps)</h2>
+        <ol class="artist-dj-requests-steps">
+          <li><strong>Hit Reply</strong> on the request email. Your reply goes straight to the DJ’s email address listed in the message.</li>
+          <li><strong>Attach the WAV</strong> or send a secure download link (WeTransfer, Dropbox, Google Drive, etc.).</li>
+          <li><strong>Name the file</strong> so it is easy to match — for example: <code id="dj-request-naming-example">Song Title - Artist Name.wav</code></li>
+        </ol>
+        <p class="artist-portal-card-note">That is it. No login required to reply — just use your normal email app (Zoho, Gmail, Outlook, etc.).</p>
+      </section>
+
+      <section class="artist-portal-card artist-dj-requests-card">
+        <h2 class="artist-portal-card-title"><i class="fa-solid fa-circle-question"></i> Quick answers</h2>
+        <dl class="artist-dj-requests-faq">
+          <div>
+            <dt>Is this spam?</dt>
+            <dd>No — it is a real DJ on Radio Now who downloaded your MP3 promo and needs WAV for their station.</dd>
+          </div>
+          <div>
+            <dt>Do I have to send a WAV?</dt>
+            <dd>WAV is optional but appreciated for airplay. MP3 promos on Radio Now are the main turn-key package.</dd>
+          </div>
+          <div>
+            <dt>Who sends the first email?</dt>
+            <dd>Radio Now sends it from <strong id="dj-request-from-email">radio@the615hideaway.com</strong> so the DJ does not have to write it themselves.</dd>
+          </div>
+          <div>
+            <dt>What about WAV for new releases?</dt>
+            <dd>After you rename your broadcast WAV to match your Radio Now turn-key folder (same naming as your MP3 promo), keep a copy handy. Reply with that file when a DJ on Radio Now requests it. You can also use the same turn-key folder — with WAV included — when you send promos to DJs who are not on Radio Now yet.</dd>
+          </div>
+        </dl>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/demo.js"></script>  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/supabase-auth.js"></script>
+  <script src="js/dj-boot.js"></script>
+  <script src="js/dj-auth.js"></script>
+  <script src="js/artist-auth.js"></script>
+  <script src="js/account-auth.js"></script>
+  <script src="js/artist-auth-ui.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/artist-portal-nav.js"></script>
+  <script src="js/artist-portal-auth.js"></script>
+  <script src="js/artist-dj-requests-app.js"></script>
+</body>
+</html>

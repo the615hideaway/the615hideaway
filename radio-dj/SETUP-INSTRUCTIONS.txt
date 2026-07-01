@@ -1,0 +1,96 @@
+RADIO NOW — SIMPLE SETUP
+========================
+
+THE BIG PICTURE (3 pieces)
+--------------------------
+  1. Google Form     — artists submit songs + upload big WAV/MP3/cover files
+  2. Google Sheet    — Form Responses 1 stores every submission (your database)
+  3. Static website  — reads data/songs.json (refreshed from the sheet every 5 min)
+
+
+IS SHEET1 THE SAME AS FORM RESPONSES 1?
+---------------------------------------
+  NO. They are different tabs in the same spreadsheet.
+
+  • Form Responses 1 — auto-filled when someone submits the Google Form
+  • Sheet1           — your older hand-built catalog (3 songs today)
+
+  The website sync reads BOTH tabs and merges them (newest form row wins
+  if the same artist + song appears twice).
+
+
+THE SIMPLE FLOW
+---------------
+  Artist submits Google Form
+       ↓
+  Form Responses 1  (text + Drive links to MP3/WAV/Cover)
+  Drive folders       (MP3 / WAV / Cover Art — set in the form)
+       ↓
+  GitHub sync every 5 minutes  →  data/songs.json  →  live website
+       ↓
+  Artist dashboard shows that artist's songs from songs.json
+  (promo folders, downloads — matched by Artist Name)
+
+
+YOUR LINKS
+----------
+  Sheet:  https://docs.google.com/spreadsheets/d/1EXNdRluPjwyaY5ktt-qHI2bNF7IT5bD1udnCgkKNdkU/edit
+  Form:   https://forms.gle/zFExL6otU1e7hJF59
+  Site:   https://the615hideaway.github.io/radio-now/
+
+
+WHAT YOU NEED RUNNING
+---------------------
+  ✓ Google Form linked to the sheet (you have this)
+  ✓ Each file upload in the form pointed at the right Drive folder:
+      MP3, WAV, Cover Art folders (see below)
+  ✓ GitHub Action "Sync Google Sheet to JSON" enabled (runs every 5 min)
+  ✓ Apps Script deployed for DJ accounts, ZIP downloads, audio streaming
+
+  OPTIONAL Apps Script trigger (only if files land in the wrong folder):
+    onArtistSongFormSubmit → On form submit
+    Renames files to "Artist - Song Title.ext" and moves them.
+
+
+DRIVE FOLDERS
+-------------
+  MP3:       1B0XflDxcTJYcKkvzOYpdHvWLyTHZNAN37O1Q65wLg_rHu6xuxrSfKl8DDvr_BLsVo5Ft6lb-
+  WAV:       137edNXYOv3xTVy7q4o1NKcTGMyshzR7MtN1BthqeXydD1Gwq-0V7JsRQR-9tXSYR45rsILzX
+  Cover Art: 1ahg11e6XCaYXensbKRhhu-JyfYI72SKjUEgAHuDUClS9T8yBFwnokk4jvb9Q2qs5y9A_kRis
+
+  _RadioNowUploadChunks — old dashboard upload temp folder. Ignore it.
+
+
+ARTIST DASHBOARD
+----------------
+  "Submit a New Song" opens your Google Form in a new tab.
+  No file upload on the website — Google Form handles large WAVs.
+
+  After submit, the song appears on the site within ~5 minutes automatically.
+  Artists do NOT run GitHub or touch the sheet.
+
+
+PAYMENT (LATER — NOT THIS WEEK)
+-------------------------------
+  Uploads are free for now. Later you can add Stripe/Google Pay and a
+  "Payment Status" column on the form. Only "paid" rows would sync to
+  the public catalog (easy filter in the sync script).
+
+
+MANUAL SYNC (admin only, if you are impatient)
+----------------------------------------------
+  powershell -ExecutionPolicy Bypass -File scripts\sync-sheet-to-json.ps1
+  git add data/songs.json data/covers
+  git commit -m "Update catalog"
+  git push
+
+
+APPS SCRIPT (still used for)
+----------------------------
+  DJ / artist login, ZIP downloads, in-browser audio, activity tracking.
+  NOT used for: form text fields, file uploads, or copying rows to Sheet1.
+
+
+DRIVE FILE SHARING
+------------------
+  MP3, WAV, and Cover files must be "Anyone with the link" → Viewer

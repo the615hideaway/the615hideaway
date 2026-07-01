@@ -14,9 +14,9 @@
     },
     dj: {
       label: 'DJ / Radio Programmer',
-      now: ['Radio Now catalog is live now (separate login for now)', 'Your DJ account here will link to it later'],
-      next: '/radio-dj portal — stream, preview, and download broadcast files with one login',
-      eta: 'Phase 2 — Wednesday+'
+      now: ['Radio Now catalog at the615hideaway.com/radio-dj', 'Browse, preview, and download turn-key promo folders', 'DJ dashboard with download history and stats'],
+      next: 'One login across the main site and Radio Now (coming soon)',
+      eta: 'Radio Now is live now — use your existing DJ email and password'
     },
     festival: {
       label: 'Festival / Venue',
@@ -114,6 +114,11 @@
 
       if (artistPortalBtn && (type === 'artist' || profile?.role === 'artist' || profile?.role === 'admin')) {
         artistPortalBtn.classList.remove('hidden');
+      }
+
+      const radioDjBtn = document.getElementById('radio-dj-btn');
+      if (radioDjBtn && (type === 'dj' || profile?.role === 'dj' || profile?.role === 'admin')) {
+        radioDjBtn.classList.remove('hidden');
       }
 
       gate.classList.add('hidden');

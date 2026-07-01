@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="/radio-dj/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Radio Now — Public download charts. Top 50 songs this week and this month.">
+  <title>Charts — Radio Now</title>
+  <link rel="icon" href="assets/logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="charts-public-page">
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="brand">
+        <img src="assets/logo.png" alt="(615) Hideaway Entertainment" class="brand-logo">
+        <div class="brand-text">
+          <span class="brand-name">Radio Now</span>
+          <span class="brand-tag">(615) Hideaway Entertainment</span>
+        </div>
+      </a>
+      <nav class="site-nav" data-site-nav data-nav-active="charts" aria-label="Main navigation"></nav>
+      <div class="header-actions">
+        <span id="dj-welcome" class="dj-welcome hidden"></span>
+        <span id="artist-welcome" class="dj-welcome hidden"></span>
+        <a href="index.html" class="btn btn-secondary btn-sm" data-signin-btn>Sign In</a>
+        <button class="btn btn-ghost hidden" id="logout-btn" type="button">
+          <i class="fa-solid fa-right-from-bracket"></i>
+          Log Out
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="charts-page">
+    <section class="charts-page-hero">
+      <div>
+        <p class="dj-dashboard-eyebrow">Public charts</p>
+        <h1>Radio Now Top 50</h1>
+        <p class="dj-dashboard-copy">Most downloaded songs across all DJs — updated from real download activity. No sign-in required to view.</p>
+      </div>
+      <a href="index.html" class="btn btn-secondary">
+        <i class="fa-solid fa-compact-disc"></i>
+        Browse Catalog
+      </a>
+    </section>
+
+    <section class="charts-panel charts-panel--full" aria-label="Top 50 downloads">
+      <div class="charts-block charts-block--full">
+        <div class="charts-block-header">
+          <h2><i class="fa-solid fa-chart-line"></i> Top 50 This Week</h2>
+        </div>
+        <div id="charts-week"></div>
+      </div>
+      <div class="charts-block charts-block--full">
+        <div class="charts-block-header">
+          <h2><i class="fa-solid fa-chart-simple"></i> Top 50 This Month</h2>
+        </div>
+        <div id="charts-month"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/config.js"></script>  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/supabase-auth.js"></script>
+  <script src="js/dj-boot.js"></script>
+  <script src="js/dj-auth.js"></script>
+  <script src="js/artist-auth.js"></script>
+  <script src="js/account-auth.js"></script>
+  <script src="js/dj-auth-ui.js"></script>
+  <script src="js/artist-auth-ui.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/sheet-catalog.js"></script>
+  <script src="js/database.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/charts-app.js"></script>
+</body>
+</html>

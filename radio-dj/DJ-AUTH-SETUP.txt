@@ -1,0 +1,97 @@
+DJ SIGN-IN SETUP (PHASE 1 — TESTING)
+====================================
+
+This adds DJ email/password sign-in and self-service account creation.
+Downloads are NOT logged yet — that is the next phase.
+
+
+BEFORE YOU TEST
+---------------
+1. Open your Radio Now Google Sheet
+2. Extensions → Apps Script
+3. Replace Code.gs with the latest file from:
+     radio-now/google-apps-script/Code.gs
+4. Save
+5. Deploy → Manage deployments → Edit → New version → Deploy
+   (Who has access must be: Anyone)
+6. Push the latest site code to GitHub (or test locally with a local server)
+
+
+WHAT GETS CREATED AUTOMATICALLY
+-------------------------------
+On the first DJ sign-up, Apps Script creates a sheet tab named:
+
+  DJs
+
+Columns (expanded automatically on redeploy):
+  dj_id | name | email | password_hash | password_salt | station | show_name | share_email | status | created_at
+  first_name | last_name | program_name | program_format | station_call_letters | station_frequency | state
+  station_website | program_website | program_start_time | program_end_time | program_timezone | program_days
+
+Passwords are hashed — you will NOT see plain-text passwords in the sheet.
+
+
+HOW TO TEST SIGN-UP
+-------------------
+1. Open the site (hard refresh)
+2. Click "Create Account"
+3. Fill in DJ sign-up (required: first/last name, program name, call letters, email, password):
+   - Program & station details (artists see these on downloads)
+   - Optional: format, frequency, state, websites, schedule, time zone, program days
+   - Email sharing is opt-in only
+4. Submit
+
+Expected:
+  - You land in the catalog
+  - Header shows your name + station
+  - A new row appears in the DJs tab
+
+
+HOW TO TEST SIGN-IN
+-------------------
+1. Log out
+2. Click "Sign In"
+3. Use the same email + password
+
+Expected:
+  - You return to the catalog with your name in the header
+
+
+TROUBLESHOOTING
+---------------
+"DJ sign-in is not configured yet"
+  → Check js/config.js has your googleScriptUrl
+
+"Could not reach the DJ sign-in service"
+  → Redeploy Apps Script (new version) with latest Code.gs
+  → Confirm deployment access is "Anyone"
+
+"Invalid email or password"
+  → Check DJs tab for the account row and status = active
+
+Login page still asks for old shared password
+  → Hard refresh (Ctrl+F5) after pulling latest code
+
+
+PHASE 2 — DJ DASHBOARD (NEW)
+----------------------------
+After redeploying the latest Code.gs, DJs get:
+- My Dashboard page (download history + stats)
+- Download logging for MP3, WAV, ZIP, and one-sheet PDF
+- Optional "share my email with artists" setting
+
+Test flow:
+1. Redeploy Apps Script (new version)
+2. Hard refresh site
+3. Download a song from the catalog
+4. Open My Dashboard — the download should appear
+5. Toggle email sharing on/off in Privacy Settings
+
+New sheet tab created automatically:
+  DJ Activity
+
+
+ARTIST PORTAL (NEW)
+-------------------
+See ARTIST-PORTAL-SETUP.txt — invite-only artist dashboard at
+artist-dashboard.html (download stats + DJ contact when shared).

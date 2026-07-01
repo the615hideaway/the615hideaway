@@ -1,0 +1,26 @@
+      <p class="login-copy">Radio programmer sign-in. Create a DJ account to browse the catalog, preview tracks, and download music.</p>
+
+      <div class="auth-tabs" role="tablist" aria-label="DJ account">
+        <button type="button" class="auth-tab active" data-auth-tab="login" role="tab" aria-selected="true">Sign In</button>
+        <button type="button" class="auth-tab" data-auth-tab="signup" role="tab" aria-selected="false">Create Account</button>
+      </div>
+
+      <form id="login-form" class="auth-panel" data-auth-panel="login">
+        <div class="login-error" id="login-error"></div>
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" placeholder="you@station.com" autocomplete="email" required>
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" placeholder="Enter password" autocomplete="current-password" required>
+        <button type="submit" class="btn btn-primary btn-full">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          Sign In
+        </button>
+      </form>
+
+      <form id="signup-form" class="auth-panel hidden" data-auth-panel="signup">
+        <div class="login-error" id="signup-error"></div>
+        <button type="submit" class="btn btn-primary btn-full">
+          <i class="fa-solid fa-user-plus"></i>
+          Create DJ Account
+        </button>
+      </form>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="/radio-dj/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Radio Now — Help DJs improve the catalog and report site issues.">
+  <title>Help Improve Catalog — Radio Now</title>
+  <link rel="icon" href="assets/logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <div id="login-gate" class="login-gate">
+    <div class="login-card">
+      <div class="brand-lockup brand-lockup--centered brand-lockup--signup">
+        <img src="assets/logo.png" alt="(615) Hideaway Entertainment" class="brand-logo brand-logo--large">
+        <div class="brand-text">
+          <h1>Radio Now</h1>
+          <p>(615) Hideaway Entertainment</p>
+        </div>
+      </div>
+      <p class="login-copy">DJ sign-in required. Help us fix typos, wrong credits, and site bugs — your reports go straight to the Radio Now team.</p>
+
+      <div class="auth-tabs" role="tablist" aria-label="DJ account">
+        <button type="button" class="auth-tab active" data-auth-tab="login" role="tab" aria-selected="true">Sign In</button>
+        <button type="button" class="auth-tab" data-auth-tab="signup" role="tab" aria-selected="false">Create Account</button>
+      </div>
+
+      <form id="login-form" class="auth-panel" data-auth-panel="login">
+        <div class="login-error" id="login-error"></div>
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" placeholder="you@station.com" autocomplete="email" required>
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" placeholder="Enter password" autocomplete="current-password" required>
+        <button type="submit" class="btn btn-primary btn-full">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          Sign In
+        </button>
+      </form>
+
+      <form id="signup-form" class="auth-panel hidden" data-auth-panel="signup">
+        <div class="login-error" id="signup-error"></div>
+        <button type="submit" class="btn btn-primary btn-full">
+          <i class="fa-solid fa-user-plus"></i>
+          Create DJ Account
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div id="app-shell" class="app-shell hidden">
+    <header class="site-header">
+      <div class="header-inner">
+        <a href="index.html" class="brand">
+          <img src="assets/logo.png" alt="(615) Hideaway Entertainment" class="brand-logo">
+          <div class="brand-text">
+            <span class="brand-name">Radio Now</span>
+            <span class="brand-tag">(615) Hideaway Entertainment</span>
+          </div>
+        </a>
+        <nav class="site-nav" data-site-nav data-nav-active="djHelp" aria-label="Main navigation"></nav>
+        <div class="header-actions">
+          <span id="dj-welcome" class="dj-welcome hidden"></span>
+          <span id="artist-welcome" class="dj-welcome hidden"></span>
+          <button class="btn btn-ghost" id="logout-btn">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            Log Out
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="dj-help-page">
+      <header class="dj-help-header">
+        <h1><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Help improve the catalog</h1>
+        <p class="dj-help-intro">Found a typo, wrong credit, or something broken? Tell us here. We use your DJ account so we know who to thank and who to follow up with.</p>
+        <p id="dj-help-reporter" class="dj-help-reporter hidden" aria-live="polite"></p>
+      </header>
+
+      <div class="dj-help-tabs" role="tablist" aria-label="Report type">
+        <button type="button" class="dj-help-tab active" data-help-tab="song" role="tab" aria-selected="true">
+          <i class="fa-solid fa-compact-disc" aria-hidden="true"></i>
+          Wrong song info
+        </button>
+        <button type="button" class="dj-help-tab" data-help-tab="bug" role="tab" aria-selected="false">
+          <i class="fa-solid fa-bug" aria-hidden="true"></i>
+          Site problem
+        </button>
+      </div>
+
+      <section id="help-panel-song" class="dj-help-panel" data-help-panel="song" role="tabpanel">
+        <form id="song-info-form" class="dj-help-form">
+          <div class="form-grid form-grid--two">
+            <div>
+              <label for="song-artist">Artist name</label>
+              <input type="text" id="song-artist" name="artistName" autocomplete="off" required>
+            </div>
+            <div>
+              <label for="song-title">Song title</label>
+              <input type="text" id="song-title" name="songTitle" autocomplete="off" required>
+            </div>
+          </div>
+          <div>
+            <label for="song-issue-type">What&apos;s wrong?</label>
+            <select id="song-issue-type" name="issueType" required>
+              <option value="">Choose one…</option>
+              <option value="typo">Typo in title or artist name</option>
+              <option value="wrong_credit">Wrong songwriter / band / label</option>
+              <option value="missing_wav">Need WAV / missing audio file</option>
+              <option value="wrong_year">Wrong year or release date</option>
+              <option value="missing_song">Song should be on Radio Now but isn&apos;t</option>
+              <option value="other">Something else</option>
+            </select>
+          </div>
+          <div>
+            <label for="song-correction">What should it be? <span class="label-hint">(the fix)</span></label>
+            <textarea id="song-correction" name="correction" rows="3" placeholder="Example: Songwriter should be Jane Doe, not John Smith"></textarea>
+          </div>
+          <div>
+            <label for="song-notes">Anything else? <span class="label-hint">(optional)</span></label>
+            <textarea id="song-notes" name="notes" rows="2" placeholder="Optional notes for the Radio Now team"></textarea>
+          </div>
+          <p id="song-form-status" class="dj-help-status hidden" role="status"></p>
+          <button type="submit" class="btn btn-primary btn-lg">
+            <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+            Send song report
+          </button>
+        </form>
+      </section>
+
+      <section id="help-panel-bug" class="dj-help-panel hidden" data-help-panel="bug" role="tabpanel">
+        <form id="site-bug-form" class="dj-help-form">
+          <div>
+            <label for="bug-page">Which page?</label>
+            <select id="bug-page" name="page" required>
+              <option value="">Choose one…</option>
+              <option value="catalog">Catalog (home)</option>
+              <option value="artists">Artists list</option>
+              <option value="artist_profile">Artist profile / songs</option>
+              <option value="download_zip">Download ZIP</option>
+              <option value="preview">Song preview / play</option>
+              <option value="login">Sign in / account</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label for="bug-what-happened">What happened?</label>
+            <textarea id="bug-what-happened" name="whatHappened" rows="4" required placeholder="Example: I clicked Download ZIP and got an error message"></textarea>
+          </div>
+          <div>
+            <label for="bug-notes">Extra details <span class="label-hint">(optional)</span></label>
+            <textarea id="bug-notes" name="notes" rows="2" placeholder="Browser, steps to reproduce, screenshot emailed separately, etc."></textarea>
+          </div>
+          <p id="bug-form-status" class="dj-help-status hidden" role="status"></p>
+          <button type="submit" class="btn btn-primary btn-lg">
+            <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+            Send bug report
+          </button>
+        </form>
+      </section>
+
+      <p class="dj-help-footer-note">Reports are saved for the Radio Now team and emailed to <strong>radio@the615hideaway.com</strong>. Thank you for helping keep the catalog accurate.</p>
+    </main>
+  </div>
+
+  <script src="js/config.js"></script>  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/supabase-auth.js"></script>
+  <script src="js/dj-boot.js"></script>
+  <script src="js/dj-auth.js"></script>
+  <script src="js/artist-auth.js"></script>
+  <script src="js/account-auth.js"></script>
+  <script src="js/dj-signup-form.js"></script>
+  <script src="js/dj-auth-ui.js"></script>
+  <script src="js/artist-auth-ui.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/dj-feedback.js"></script>
+  <script src="js/dj-help-app.js"></script>
+</body>
+</html>

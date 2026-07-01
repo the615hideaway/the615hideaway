@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="/radio-dj/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Radio Now — Turn-key radio promo: MP3, cover art, and one-sheet PDF in every download folder, named and ready for DJs. WAV available on request.">
+  <title>Radio Now — (615) Hideaway Entertainment</title>
+  <link rel="icon" href="assets/logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <div id="login-gate" class="login-gate">
+    <div id="turnkey-pitch-login" class="turnkey-pitch-login-wrap" data-page="dj"></div>
+
+    <div class="login-gate-actions">
+    <div class="login-auth-column">
+      <nav class="account-role-picker account-role-picker--triple" aria-label="Choose account type">
+        <a href="index.html" class="account-role-card is-active" aria-current="page">
+          <i class="fa-solid fa-tower-broadcast" aria-hidden="true"></i>
+          <span class="account-role-title">DJ Account</span>
+          <span class="account-role-desc">Browse &amp; download music</span>
+        </a>
+        <a href="artist-dashboard.html" class="account-role-card">
+          <i class="fa-solid fa-microphone" aria-hidden="true"></i>
+          <span class="account-role-title">Artist Account</span>
+          <span class="account-role-desc">Promo ZIPs &amp; spins</span>
+        </a>
+        <a href="artist-dashboard.html#label-signup" class="account-role-card account-role-card--label">
+          <i class="fa-solid fa-building" aria-hidden="true"></i>
+          <span class="account-role-title">Label Account</span>
+          <span class="account-role-desc">Roster, submit songs</span>
+        </a>
+      </nav>
+
+      <div class="login-card login-card--dj">
+        <div class="brand-lockup brand-lockup--centered brand-lockup--signup">
+          <img src="assets/logo.png" alt="(615) Hideaway Entertainment" class="brand-logo brand-logo--large">
+          <div class="brand-text">
+            <h1>Radio Now</h1>
+            <p>(615) Hideaway Entertainment</p>
+          </div>
+        </div>
+        <p class="login-account-badge"><i class="fa-solid fa-tower-broadcast"></i> DJ sign in · Supabase account</p>
+
+        <div class="auth-tabs" role="tablist" aria-label="DJ account">
+        <button type="button" class="auth-tab active" data-auth-tab="login" role="tab" aria-selected="true">DJ Sign In</button>
+        <button type="button" class="auth-tab" data-auth-tab="signup" role="tab" aria-selected="false">DJ Sign Up</button>
+      </div>
+
+      <form id="login-form" class="auth-panel" data-auth-panel="login">
+        <div class="login-error" id="login-error"></div>
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" placeholder="you@station.com" autocomplete="email" required>
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" placeholder="Enter password" autocomplete="current-password" required>
+        <button type="submit" class="btn btn-primary btn-full">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          DJ Sign In
+        </button>
+      </form>
+
+      <form id="signup-form" class="auth-panel hidden" data-auth-panel="signup">
+        <div class="login-error" id="signup-error"></div>
+        <button type="submit" class="btn btn-primary btn-full">
+          <i class="fa-solid fa-user-plus"></i>
+          Create DJ Account
+        </button>
+      </form>
+      </div>
+
+      <aside class="login-charts-card" aria-label="Public download charts">
+        <div class="login-charts-copy-block">
+          <p class="login-charts-eyebrow"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Public · No sign-in</p>
+          <h2 class="login-charts-title">See the charts</h2>
+          <p class="login-charts-copy">Top downloads this week and month — real DJ activity on Radio Now.</p>
+        </div>
+        <a href="charts.html" class="btn btn-secondary login-charts-btn">
+          <i class="fa-solid fa-chart-simple" aria-hidden="true"></i>
+          View Top 50 Charts
+        </a>
+      </aside>
+    </div>
+    </div>
+  </div>
+
+  <div id="app-shell" class="app-shell hidden">
+    <header class="site-header">
+      <div class="header-inner">
+        <a href="index.html" class="brand">
+          <img src="assets/logo.png" alt="(615) Hideaway Entertainment" class="brand-logo">
+          <div class="brand-text">
+            <span class="brand-name">Radio Now</span>
+            <span class="brand-tag">(615) Hideaway Entertainment</span>
+          </div>
+        </a>
+        <nav class="site-nav" data-site-nav data-nav-active="catalog" aria-label="Main navigation"></nav>
+        <div class="header-actions">
+          <span id="dj-welcome" class="dj-welcome hidden"></span>
+          <span id="artist-welcome" class="dj-welcome hidden"></span>
+          <button class="btn btn-ghost" id="logout-btn">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            Log Out
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div id="demo-banner" class="demo-banner hidden" role="status">
+      <div class="demo-banner-copy">
+        <strong>Demo mode</strong> — DJs: preview the catalog with a <strong>FREE DJ account</strong>. Artists: try a free one-sheet PDF. Full turn-key ZIPs unlock after sign-up.
+      </div>
+      <a href="index.html" class="btn btn-secondary btn-sm">Create DJ account</a>
+    </div>
+
+    <div id="connection-banner" class="connection-banner hidden"></div>
+
+    <div class="layout">
+      <main class="catalog-panel">
+        <section id="catalog-artist-browser" class="catalog-artist-browser catalog-artist-browser--hero hidden" aria-label="Browse artists"></section>
+
+        <section class="toolbar toolbar--catalog">
+          <div class="filter-row">
+            <div class="search-wrap">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="search" id="search-input" placeholder="Search artist, song, style, label…" autocomplete="off">
+            </div>
+            <select id="style-filter" aria-label="Filter by music style">
+              <option value="">All styles</option>
+            </select>
+            <select id="year-filter" aria-label="Filter by year">
+              <option value="">All years</option>
+            </select>
+            <button class="btn btn-secondary" id="clear-filters-btn">Clear</button>
+          </div>
+        </section>
+
+        <div id="turnkey-pitch-catalog" class="turnkey-pitch-catalog-wrap"></div>
+
+        <section id="spotlight-list" class="catalog-spotlight hidden" aria-label="Spotlight releases"></section>
+
+        <section id="detail-panel" class="detail-panel hidden" aria-live="polite"></section>
+
+        <section id="catalog-grid" class="catalog-list" aria-live="polite"></section>
+
+        <section id="catalog-next-steps" class="catalog-next-steps hidden" aria-label="What to do next">
+          <div class="catalog-next-steps-inner">
+            <h2><i class="fa-solid fa-compass" aria-hidden="true"></i> What&apos;s next?</h2>
+            <p class="catalog-next-steps-lead">You&apos;ve seen the newest releases. Most DJs don&apos;t stop here — dig into an artist&apos;s full catalog to fill out your show.</p>
+            <ol class="catalog-next-steps-list">
+              <li>Use <strong>Browse by Artist</strong> at the top to jump straight to back catalog.</li>
+              <li>Open the <strong>Artists</strong> page for the full roster — albums, singles, and older tracks.</li>
+              <li>Hit <strong>Download</strong> on songs you want, then grab your MP3 ZIP from the panel on the right.</li>
+              <li>Found a typo? Use <strong><a href="dj-help.html">Help Catalog</a></strong> to report wrong song info or site bugs.</li>
+            </ol>
+            <div class="catalog-next-steps-actions">
+              <button type="button" class="btn btn-primary btn-lg" id="catalog-scroll-to-artists-btn">
+                <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
+                Browse by Artist
+              </button>
+              <a href="artists.html" class="btn btn-secondary btn-lg">
+                <i class="fa-solid fa-users" aria-hidden="true"></i>
+                All Artists
+              </a>
+              <a href="dj-help.html" class="btn btn-secondary btn-lg">
+                <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                Help Catalog
+              </a>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <aside class="queue-panel">
+        <div class="queue-header">
+          <h2><i class="fa-solid fa-list-ul"></i> DJ Queue</h2>
+          <button class="btn btn-ghost btn-sm" id="clear-queue-btn">Clear</button>
+        </div>
+        <p class="queue-help">Add songs for show prep and play through previews.</p>
+        <div id="queue-empty" class="queue-empty">
+          <i class="fa-solid fa-headphones"></i>
+          <p>No songs in queue yet. Click <strong>Queue</strong> on any track to add it.</p>
+        </div>
+        <div id="queue-list" class="queue-list"></div>
+        <div class="queue-footer">
+          <button class="btn btn-primary btn-full" id="play-queue-btn" disabled>
+            <i class="fa-solid fa-play"></i>
+            Play Queue
+          </button>
+        </div>
+
+        <div class="download-queue-section">
+          <div class="queue-header">
+            <h2><i class="fa-solid fa-download"></i> Download Queue</h2>
+            <button class="btn btn-ghost btn-sm" id="clear-download-btn">Clear</button>
+          </div>
+          <div id="turnkey-pitch-queue"></div>
+          <p class="queue-help">Queue tracks for an MP3 ZIP with cover art and one-sheet PDF. Need WAV? Email the artist from song details.</p>
+          <p id="download-setup-notice" class="queue-help queue-warning hidden">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            ZIP downloads need a one-time Apps Script setup. Open your Radio Now Google Sheet → Extensions → Apps Script → deploy <code>Code.gs</code> → paste the Web App URL into <code>js/config.js</code>. See <code>AUDIO-FIX-STEPS.txt</code>.
+          </p>
+          <div id="download-empty" class="queue-empty">
+            <i class="fa-solid fa-file-zipper"></i>
+            <p>No downloads queued. Click <strong>+ Download</strong> on any track.</p>
+          </div>
+          <div id="download-list" class="queue-list download-list"></div>
+          <div class="download-footer">
+            <div class="download-group">
+              <button class="btn btn-primary btn-full" id="download-zip-btn" disabled>
+                <i class="fa-solid fa-file-zipper"></i>
+                Download MP3 ZIP
+              </button>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <div id="now-playing" class="now-playing hidden">
+      <div class="now-playing-meta">
+        <span class="now-label">Now Playing</span>
+        <strong id="now-playing-title"></strong>
+        <span id="now-playing-artist"></span>
+      </div>
+      <div id="now-playing-player" class="now-playing-player"></div>
+      <button class="btn btn-secondary btn-sm" id="skip-queue-btn">
+        <i class="fa-solid fa-forward-step"></i>
+        Skip
+      </button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="js/vendor/jspdf.umd.min.js"></script>
+  <script src="js/config.js"></script>  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/supabase-auth.js"></script>
+  <script src="js/dj-boot.js"></script>
+  <script src="js/dj-auth.js"></script>
+  <script src="js/artist-auth.js"></script>
+  <script src="js/account-auth.js"></script>
+  <script src="js/dj-signup-form.js"></script>
+  <script src="js/dj-auth-ui.js"></script>
+  <script src="js/artist-auth-ui.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/spotlight.js"></script>
+  <script src="js/spotlight-admin.js"></script>
+  <script src="js/dj-favorites.js"></script>
+  <script src="js/pitch.js"></script>
+  <script src="js/demo.js"></script>
+  <script src="js/dj-activity.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/audio-player.js"></script>
+  <script src="js/one-sheet.js"></script>
+  <script src="js/sheet-catalog.js"></script>
+  <script src="js/database.js"></script>
+  <script src="js/wav-request.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

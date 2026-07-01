@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="/radio-dj/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Radio Now — Artist spins dashboard. See DJ download activity.">
+  <title>Spins — Radio Now</title>
+  <link rel="icon" href="assets/logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="artist-portal-body">
+
+  <div id="login-gate" class="login-gate">
+    <div id="turnkey-pitch-login" class="turnkey-pitch-login-wrap" data-page="artist"></div>
+
+    <div class="login-gate-actions">
+    <div class="login-auth-column">
+      <nav class="account-role-picker account-role-picker--triple" aria-label="Choose account type">
+        <a href="index.html" class="account-role-card">
+          <i class="fa-solid fa-tower-broadcast" aria-hidden="true"></i>
+          <span class="account-role-title">DJ Account</span>
+          <span class="account-role-desc">Browse &amp; download music</span>
+        </a>
+        <a href="artist-dashboard.html" class="account-role-card is-active" aria-current="page">
+          <i class="fa-solid fa-microphone" aria-hidden="true"></i>
+          <span class="account-role-title">Artist Account</span>
+          <span class="account-role-desc">Spins &amp; promo</span>
+        </a>
+        <a href="artist-dashboard.html#label-signup" class="account-role-card account-role-card--label">
+          <i class="fa-solid fa-building" aria-hidden="true"></i>
+          <span class="account-role-title">Label Account</span>
+          <span class="account-role-desc">Roster &amp; spins</span>
+        </a>
+      </nav>
+
+      <div class="login-card login-card--artist">
+        <div class="brand-lockup brand-lockup--centered brand-lockup--signup">
+          <img src="assets/logo.png" alt="(615) Hideaway Entertainment" class="brand-logo brand-logo--large">
+          <div class="brand-text">
+            <h1>Radio Now</h1>
+            <p>(615) Hideaway Entertainment</p>
+          </div>
+        </div>
+        <p class="login-account-badge login-account-badge--artist"><i class="fa-solid fa-microphone"></i> Artist &amp; label sign in</p>
+
+        <div class="auth-tabs auth-tabs--triple" role="tablist" aria-label="Artist and label accounts">
+        <button type="button" class="auth-tab active" data-auth-tab="login" role="tab" aria-selected="true">Sign In</button>
+        <button type="button" class="auth-tab" data-auth-tab="signup" role="tab" aria-selected="false">Artist Sign Up</button>
+        <button type="button" class="auth-tab" data-auth-tab="label-signup" role="tab" aria-selected="false">Label Sign Up</button>
+      </div>
+
+      <form id="login-form" class="auth-panel" data-auth-panel="login">
+        <div class="login-error" id="login-error"></div>
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" placeholder="you@label.com" autocomplete="email" required>
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" placeholder="Enter password" autocomplete="current-password" required>
+        <button type="submit" class="btn btn-primary btn-full">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          Artist Sign In
+        </button>
+      </form>
+
+      <form id="signup-form" class="auth-panel hidden" data-auth-panel="signup">
+        <div class="login-error" id="signup-error"></div>
+        <p class="auth-panel-note">Create a free artist account with your <strong>stage or band name</strong>. If your label already set up a profile for you, use the email they listed to <strong>claim</strong> it.</p>
+        <label for="signup-artist-name">Artist Name</label>
+        <input type="text" id="signup-artist-name" placeholder="Your artist or band name" autocomplete="organization" required>
+        <label for="signup-email">Email</label>
+        <input type="email" id="signup-email" placeholder="you@label.com" autocomplete="email" required>
+        <label for="signup-password">Password</label>
+        <input type="password" id="signup-password" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" required>
+        <label for="signup-password-confirm">Confirm password</label>
+        <input type="password" id="signup-password-confirm" placeholder="Re-enter password" autocomplete="new-password" minlength="8" required>
+        <button type="submit" class="btn btn-primary btn-full">
+          <i class="fa-solid fa-user-plus"></i>
+          Create Artist Account
+        </button>
+      </form>
+
+      <form id="label-signup-form" class="auth-panel hidden" data-auth-panel="label-signup">
+        <div class="login-error" id="label-signup-error"></div>
+        <p class="auth-panel-note">Create a free label account with your <strong>label name</strong>. Use the same name on song submissions so your roster links to your dashboard.</p>
+        <label for="signup-label-name">Label Name</label>
+        <input type="text" id="signup-label-name" placeholder="Your record label name" autocomplete="organization" required>
+        <label for="label-signup-email">Email</label>
+        <input type="email" id="label-signup-email" placeholder="you@label.com" autocomplete="email" required>
+        <label for="label-signup-password">Password</label>
+        <input type="password" id="label-signup-password" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" required>
+        <label for="label-signup-password-confirm">Confirm password</label>
+        <input type="password" id="label-signup-password-confirm" placeholder="Re-enter password" autocomplete="new-password" minlength="8" required>
+        <button type="submit" class="btn btn-primary btn-full">
+          <i class="fa-solid fa-building"></i>
+          Create Label Account
+        </button>
+      </form>
+      </div>
+
+      <aside class="login-charts-card" aria-label="Public download charts">
+        <div class="login-charts-copy-block">
+          <p class="login-charts-eyebrow"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Public · No sign-in</p>
+          <h2 class="login-charts-title">See the charts</h2>
+          <p class="login-charts-copy">Top downloads this week and month — real DJ activity on Radio Now.</p>
+        </div>
+        <a href="charts.html" class="btn btn-secondary login-charts-btn">
+          <i class="fa-solid fa-chart-simple" aria-hidden="true"></i>
+          View Top 50 Charts
+        </a>
+      </aside>
+    </div>
+    </div>
+  </div>
+
+  <div id="app-shell" class="app-shell hidden">
+    <div id="demo-banner" class="demo-banner hidden" role="status">
+      <div class="demo-banner-copy">
+        <strong>Demo mode</strong> — Sample spin data for David Parmley.
+      </div>
+      <a href="artist-dashboard.html" class="btn btn-secondary btn-sm">Create artist account</a>
+    </div>
+
+    <div class="artist-portal-chrome">
+      <a href="artist-dashboard.html" class="artist-portal-chrome-brand">
+        <img src="assets/logo.png" alt="" class="artist-portal-chrome-logo">
+        <span>Radio Now</span>
+      </a>
+      <div class="artist-portal-chrome-actions">
+        <a href="artist-promo.html" class="artist-portal-chrome-link">Your Music</a>
+        <a href="charts.html" class="artist-portal-chrome-link">Charts</a>
+        <span id="artist-welcome" class="artist-portal-welcome hidden"></span>
+        <button type="button" class="btn btn-ghost btn-sm" id="logout-btn" aria-label="Log out">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+      </div>
+    </div>
+
+    <nav class="artist-portal-nav" data-artist-portal-nav aria-label="Artist portal sections"></nav>
+
+    <main class="artist-portal-page artist-spins-page">
+      <h1 id="artist-display-name" class="visually-hidden">Your artist</h1>
+      <p id="dashboard-subtitle" class="visually-hidden">Spin stats</p>
+
+      <section id="artist-featured-banner" class="artist-featured-banner hidden" aria-label="DJ featured spotlight"></section>
+
+      <section class="spin-picker-section" id="song-picker" aria-label="Choose a song"></section>
+
+      <section id="song-infographic" class="spin-infographic-host hidden" aria-live="polite"></section>
+
+      <section class="spin-song-metrics hidden" id="dashboard-stats" aria-label="Song spin stats"></section>
+
+      <section class="spin-lines-section" aria-label="Spin activity">
+        <div class="spin-lines-header">
+          <h2><i class="fa-solid fa-tower-broadcast"></i> DJ spins</h2>
+          <span class="spin-lines-meta" id="spin-lines-meta"></span>
+        </div>
+        <a href="djs.html" class="btn btn-secondary btn-full spin-dj-directory-btn">
+          <i class="fa-solid fa-users"></i>
+          DJ Member Directory
+        </a>
+        <div id="spin-lines" class="spin-lines-list"></div>
+      </section>
+
+      <section class="dj-panel artist-access-panel hidden" id="label-access-panel" aria-live="polite">
+        <div class="dj-panel-header">
+          <h2><i class="fa-solid fa-building"></i> Label access</h2>
+        </div>
+        <p class="dj-panel-note">Labels with access to your account. Remove anytime — your chart history stays with you.</p>
+        <div id="label-access-list"></div>
+      </section>
+
+      <section class="artist-dj-requests-banner" aria-label="DJ WAV requests info">
+        <div class="artist-dj-requests-banner-inner">
+          <div>
+            <h2><i class="fa-solid fa-envelope"></i> DJ WAV requests</h2>
+            <p>When a DJ needs a broadcast WAV, Radio Now emails you with the song and DJ contact info. Just hit <strong>Reply</strong> and send the file or a link.</p>
+          </div>
+          <a href="artist-dj-requests.html" class="btn btn-secondary btn-sm">Learn more</a>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/pitch.js"></script>
+  <script src="js/demo.js"></script>  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/supabase-auth.js"></script>
+  <script src="js/dj-boot.js"></script>
+  <script src="js/dj-auth.js"></script>
+  <script src="js/artist-auth.js"></script>
+  <script src="js/account-auth.js"></script>
+  <script src="js/artist-auth-ui.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/artist-portal-nav.js"></script>
+  <script src="js/artist-activity.js"></script>
+  <script src="js/sheet-catalog.js"></script>
+  <script src="js/database.js"></script>
+  <script src="js/spotlight.js"></script>
+  <script src="js/artist-dashboard-app.js"></script>
+</body>
+</html>

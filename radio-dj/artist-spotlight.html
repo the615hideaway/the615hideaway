@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="/radio-dj/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Radio Now — DJ featured spotlight for artists and labels.">
+  <title>Featured — Radio Now</title>
+  <link rel="icon" href="assets/logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="artist-portal-body">
+
+  <div id="app-shell" class="app-shell hidden">
+    <div class="artist-portal-chrome">
+      <a href="artist-dashboard.html" class="artist-portal-chrome-brand">
+        <img src="assets/logo.png" alt="" class="artist-portal-chrome-logo">
+        <span>Radio Now</span>
+      </a>
+      <div class="artist-portal-chrome-actions">
+        <a href="artist-promo.html" class="artist-portal-chrome-link">Your Music</a>
+        <a href="charts.html" class="artist-portal-chrome-link">Charts</a>
+        <span id="artist-welcome" class="artist-portal-welcome hidden"></span>
+        <button type="button" class="btn btn-ghost btn-sm" id="logout-btn" aria-label="Log out">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+      </div>
+    </div>
+
+    <nav class="artist-portal-nav" data-artist-portal-nav></nav>
+
+    <main class="artist-portal-page">
+      <header class="artist-portal-hero">
+        <p class="artist-portal-eyebrow">DJ spotlight</p>
+        <h1>Featured on Radio Now</h1>
+        <p class="artist-portal-copy" id="featured-intro">Songs hand-picked for the top of the DJ catalog. When your music is featured here, stations see it first.</p>
+      </header>
+
+      <div id="artist-featured-content"></div>
+    </main>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/demo.js"></script>  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/supabase-auth.js"></script>
+  <script src="js/dj-boot.js"></script>
+  <script src="js/dj-auth.js"></script>
+  <script src="js/artist-auth.js"></script>
+  <script src="js/account-auth.js"></script>
+  <script src="js/artist-auth-ui.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/spotlight.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/sheet-catalog.js"></script>
+  <script src="js/database.js"></script>
+  <script src="js/artist-portal-nav.js"></script>
+  <script src="js/artist-portal-auth.js"></script>
+  <script src="js/artist-spotlight-app.js"></script>
+</body>
+</html>

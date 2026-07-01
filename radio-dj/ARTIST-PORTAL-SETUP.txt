@@ -1,0 +1,52 @@
+ARTIST PORTAL SETUP
+===================
+
+Artists can self-register at artist-dashboard.html (Artist Sign Up).
+DJs use index.html (DJ Sign Up). The login pages have a clear DJ vs Artist picker.
+
+1. REDEPLOY APPS SCRIPT
+-----------------------
+Paste latest google-apps-script/Code.gs and deploy a new version.
+
+Endpoints: artist_login, artist_signup, artist_activate, artist_dashboard
+
+2. ARTIST SIGN UP (self-service)
+--------------------------------
+Artist goes to artist-dashboard.html → Artist Sign Up:
+  - Artist Name — any artist or band name (claim a label-created profile with the email they listed)
+  - Email + password
+
+Label goes to artist-dashboard.html → Label Sign Up:
+  - Label Name — any label name (use the same name on the Google Form when submitting songs)
+  - Email + password
+
+Dashboard shows DJ downloads for songs matching that artist name.
+
+3. ARTIST ACCOUNTS SHEET (auto-created)
+---------------------------------------
+Tab: Artist Accounts
+  artist_account_id | artist_name | email | password_hash | password_salt | status | created_at
+
+Rows are created automatically on sign up.
+
+4. OPTIONAL: INVITE FIRST (legacy)
+----------------------------------
+You can still pre-add a row with status=invited and blank password.
+artist_activate still works if you need that flow.
+
+5. WHAT ARTISTS SEE
+-------------------
+- Turn-key promo ZIP downloads for every song under their artist name
+  (MP3 + cover + PDF one-sheet — same package DJs get)
+- "Download All" or per-song ZIP — share with DJs not on Radio Now
+- Download stats and charts for Radio Now DJ activity
+- Each logged download: song, DJ info, email if DJ opted to share
+
+WORKFLOW: Artist pays → you add song to Sheet1 → sync catalog →
+artist sees new folder on dashboard and can download/send the ZIP.
+
+6. TURN-KEY FILE NAMING (marketing + actual downloads)
+------------------------------------------------------
+Song Title - Artist Name.mp3
+Song Title - Artist Name.jpg
+Song Title - Artist Name OneSheet.pdf

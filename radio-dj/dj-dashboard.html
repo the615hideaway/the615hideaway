@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="/radio-dj/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Radio Now — DJ dashboard and download history.">
+  <title>My Dashboard — Radio Now</title>
+  <link rel="icon" href="assets/logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <div id="login-gate" class="login-gate">
+    <div id="turnkey-pitch-login" class="turnkey-pitch-login-wrap" data-page="dj"></div>
+
+    <div class="login-auth-column">
+      <nav class="account-role-picker" aria-label="Choose account type">
+        <a href="index.html" class="account-role-card is-active" aria-current="page">
+          <i class="fa-solid fa-tower-broadcast" aria-hidden="true"></i>
+          <span class="account-role-title">DJ Account</span>
+          <span class="account-role-desc">Browse &amp; download music</span>
+        </a>
+        <a href="artist-dashboard.html" class="account-role-card">
+          <i class="fa-solid fa-microphone" aria-hidden="true"></i>
+          <span class="account-role-title">Artist Account</span>
+          <span class="account-role-desc">Promo ZIPs &amp; radio stats</span>
+        </a>
+      </nav>
+
+      <div class="login-card login-card--dj">
+        <div class="brand-lockup brand-lockup--centered brand-lockup--signup">
+          <img src="assets/logo.png" alt="(615) Hideaway Entertainment" class="brand-logo brand-logo--large">
+          <div class="brand-text">
+            <h1>Radio Now</h1>
+            <p>(615) Hideaway Entertainment</p>
+          </div>
+        </div>
+        <p class="login-account-badge"><i class="fa-solid fa-tower-broadcast"></i> DJ sign in</p>
+
+        <div class="auth-tabs" role="tablist" aria-label="DJ account">
+        <button type="button" class="auth-tab active" data-auth-tab="login" role="tab" aria-selected="true">DJ Sign In</button>
+        <button type="button" class="auth-tab" data-auth-tab="signup" role="tab" aria-selected="false">DJ Sign Up</button>
+      </div>
+
+      <form id="login-form" class="auth-panel" data-auth-panel="login">
+        <div class="login-error" id="login-error"></div>
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" placeholder="you@station.com" autocomplete="email" required>
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" placeholder="Enter password" autocomplete="current-password" required>
+        <button type="submit" class="btn btn-primary btn-full">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          DJ Sign In
+        </button>
+      </form>
+
+      <form id="signup-form" class="auth-panel hidden" data-auth-panel="signup">
+        <div class="login-error" id="signup-error"></div>
+        <button type="submit" class="btn btn-primary btn-full">
+          <i class="fa-solid fa-user-plus"></i>
+          Create DJ Account
+        </button>
+      </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="app-shell" class="app-shell hidden">
+    <header class="site-header">
+      <div class="header-inner">
+        <a href="index.html" class="brand">
+          <img src="assets/logo.png" alt="(615) Hideaway Entertainment" class="brand-logo">
+          <div class="brand-text">
+            <span class="brand-name">Radio Now</span>
+            <span class="brand-tag">(615) Hideaway Entertainment</span>
+          </div>
+        </a>
+        <nav class="site-nav" data-site-nav data-nav-active="djDashboard" aria-label="Main navigation"></nav>
+        <div class="header-actions">
+          <span id="dj-welcome" class="dj-welcome hidden"></span>
+          <span id="artist-welcome" class="dj-welcome hidden"></span>
+          <button class="btn btn-ghost" id="logout-btn">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            Log Out
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div id="demo-banner" class="demo-banner hidden" role="status">
+      <div class="demo-banner-copy">
+        <strong>Demo mode</strong> — Read-only preview. Download history is real sample data.
+      </div>
+      <a href="index.html" class="btn btn-secondary btn-sm">Create DJ account</a>
+    </div>
+
+    <main class="dj-dashboard-page">
+      <section class="dj-dashboard-hero">
+        <div>
+          <p class="dj-dashboard-eyebrow">DJ Dashboard</p>
+          <h1 id="dashboard-title">Your download history</h1>
+          <p class="dj-dashboard-copy">Track what you have already downloaded so you do not grab the same song twice.</p>
+          <div class="dj-dashboard-hero-actions">
+            <div class="dj-profile-toggle" id="profile-panel">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                id="edit-profile-btn"
+                aria-expanded="false"
+                aria-controls="profile-editor"
+              >
+                <i class="fa-solid fa-user-pen" aria-hidden="true"></i>
+                Edit Profile
+              </button>
+            </div>
+            <a href="charts.html" class="btn btn-secondary">
+              <i class="fa-solid fa-chart-simple" aria-hidden="true"></i>
+              View Charts
+            </a>
+            <a href="dj-spotlight.html" class="btn btn-secondary hidden" id="spotlight-admin-link">
+              <i class="fa-solid fa-star" aria-hidden="true"></i>
+              Catalog Spotlight
+            </a>
+          </div>
+        </div>
+        <a href="index.html" class="btn btn-secondary">
+          <i class="fa-solid fa-compact-disc"></i>
+          Browse Catalog
+        </a>
+      </section>
+
+      <div class="dj-panel dj-panel--profile hidden" id="profile-editor" aria-hidden="true">
+        <div class="dj-panel-header">
+          <h2><i class="fa-solid fa-user-pen"></i> DJ Profile</h2>
+          <button type="button" class="btn btn-ghost btn-sm" id="close-profile-btn">
+            <i class="fa-solid fa-xmark"></i>
+            Close
+          </button>
+        </div>
+        <form id="dj-profile-form" class="dj-profile-form dashboard-form">
+          <div id="dj-profile-fields"></div>
+          <div class="dj-profile-privacy">
+            <label class="checkbox-field checkbox-field--panel">
+              <input type="checkbox" id="share-email-toggle">
+              <span>Share my DJ contact email with artists when I download their music</span>
+            </label>
+            <p class="dj-panel-note">Your login email stays private. Artists only see your DJ contact email when sharing is turned on.</p>
+            <p class="dj-panel-status" id="share-email-status"></p>
+          </div>
+          <div class="dj-profile-actions">
+            <button type="submit" class="btn btn-primary" id="save-profile-btn">
+              <i class="fa-solid fa-floppy-disk"></i>
+              Save Profile
+            </button>
+            <p class="dj-panel-status" id="profile-save-status" aria-live="polite"></p>
+          </div>
+        </form>
+      </div>
+
+      <section class="dj-dashboard-stats" id="dashboard-stats"></section>
+
+      <section class="dj-dashboard-grid">
+        <div class="dj-panel dj-panel--wide">
+          <div class="dj-panel-header">
+            <h2>Download History</h2>
+            <span class="dj-panel-meta" id="history-count"></span>
+          </div>
+          <div id="dashboard-history"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/pitch.js"></script>  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/supabase-auth.js"></script>
+  <script src="js/dj-boot.js"></script>
+  <script src="js/dj-auth.js"></script>
+  <script src="js/artist-auth.js"></script>
+  <script src="js/account-auth.js"></script>
+  <script src="js/dj-signup-form.js"></script>
+  <script src="js/dj-auth-ui.js"></script>
+  <script src="js/artist-auth-ui.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/spotlight.js"></script>
+  <script src="js/demo.js"></script>
+  <script src="js/dj-activity.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/dj-dashboard-app.js"></script>
+</body>
+</html>

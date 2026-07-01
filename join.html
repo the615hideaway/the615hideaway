@@ -22,7 +22,7 @@
         <a href="/">Home</a>
         <a href="/artists/david-parmley">David Parmley</a>
         <a href="/join" class="active" id="nav-auth-link">Join</a>
-        <a href="https://the615hideaway.github.io/radio-now/">Radio Now</a>
+        <a href="/radio-dj">Radio Now</a>
       </nav>
     </div>
   </header>
@@ -33,19 +33,30 @@
         <div class="auth-card">
           <span class="hero-eyebrow">Free to join</span>
           <h1>Join The 615 Hideaway</h1>
-          <p class="auth-lead">
+          <p class="auth-lead" id="join-lead">
             Create a free account for new music alerts, Artist Mindset articles,
             and members-only updates from David Parmley and the label.
           </p>
 
+          <div id="dj-redirect-panel" class="auth-alert auth-alert--info hidden" role="region" aria-label="DJ signup">
+            <strong>DJ / Radio Programmer?</strong> Sign up on Radio Now with your station and program details — same Supabase login as the main site.
+            <div class="hero-actions" style="margin-top:0.75rem;">
+              <a href="/radio-dj?tab=signup" class="btn btn-primary">Create DJ Account</a>
+              <a href="/radio-dj?tab=signin" class="btn btn-ghost">DJ Sign In</a>
+            </div>
+            <p class="auth-footnote" style="margin-top:0.75rem;margin-bottom:0;">
+              Had an account on the old Radio Now site? Sign up once more with the same email — your download history stays linked by email.
+            </p>
+          </div>
+
           <div id="auth-message" class="auth-alert hidden" role="alert" aria-live="polite"></div>
 
-          <div class="auth-tabs" role="tablist" aria-label="Account access">
+          <div id="member-auth-tabs" class="auth-tabs" role="tablist" aria-label="Account access">
             <button type="button" class="auth-tab active" data-auth-tab="signup" aria-selected="true">Create Account</button>
             <button type="button" class="auth-tab" data-auth-tab="signin" aria-selected="false">Sign In</button>
           </div>
 
-          <form id="signup-form" class="auth-panel" data-auth-panel="signup">
+          <form id="signup-form" class="auth-panel" data-auth-panel="signup" data-member-form>
             <label for="signup-name">Name</label>
             <input type="text" id="signup-name" autocomplete="name" required placeholder="Your name">
 
@@ -67,7 +78,7 @@
             <button type="submit" class="btn btn-primary btn-full">Create Free Account</button>
           </form>
 
-          <form id="signin-form" class="auth-panel hidden" data-auth-panel="signin">
+          <form id="signin-form" class="auth-panel hidden" data-auth-panel="signin" data-member-form>
             <label for="signin-email">Email</label>
             <input type="email" id="signin-email" autocomplete="email" required placeholder="you@email.com">
 
@@ -77,9 +88,9 @@
             <button type="submit" class="btn btn-primary btn-full">Sign In</button>
           </form>
 
-          <p class="auth-footnote">
+          <p class="auth-footnote" id="join-footnote">
             <strong>Artists:</strong> you get your own page at the615hideaway.com/artists/your-name — edit and publish it yourself.<br>
-            DJs: <a href="https://the615hideaway.github.io/radio-now/">Radio Now</a> for now. Label/publicist tools come later.<br>
+            <strong>DJs:</strong> <a href="/radio-dj">Radio Now</a> sign-up (station &amp; program profile) — one Supabase account for the whole site.<br>
             <a href="/privacy">Privacy &amp; Security</a> — how we protect your account.
           </p>
         </div>

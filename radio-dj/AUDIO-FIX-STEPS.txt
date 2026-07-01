@@ -1,0 +1,86 @@
+FIX ZIP DOWNLOADS & AUDIO ON RADIO NOW (5 MINUTES)
+==================================================
+
+Google Drive blocks direct downloads from the browser (CORS). Without the
+Apps Script proxy below, ZIP downloads fail and only loose MP3 links open.
+
+The same one-time setup fixes ZIP bundles (audio + cover + one-sheet per song)
+and reliable audio access for your catalog.
+
+Your sheet:
+https://docs.google.com/spreadsheets/d/1EXNdRluPjwyaY5ktt-qHI2bNF7IT5bD1udnCgkKNdkU/edit
+
+
+STEP 1 — OPEN APPS SCRIPT
+-------------------------
+1. Open your Radio Now Google Sheet (link above)
+2. Click Extensions → Apps Script
+
+
+STEP 2 — PASTE THE CODE
+-----------------------
+1. Delete any code already in the editor
+2. Open this file on your computer:
+     radio-now/google-apps-script/Code.gs
+3. Copy ALL of the code and paste it into Apps Script
+4. Click Save (disk icon). Name the project "Radio Now API"
+
+
+STEP 3 — DEPLOY AS WEB APP
+--------------------------
+1. Click Deploy → New deployment
+2. Click the gear icon → choose "Web app"
+3. Settings:
+     Description: Radio Now API
+     Execute as: Me
+     Who has access: Anyone
+4. Click Deploy
+5. Approve permissions if Google asks
+6. COPY the Web App URL (ends with /exec)
+
+
+STEP 4 — PASTE URL INTO THE SITE
+--------------------------------
+1. Open: radio-now/js/config.js
+2. Paste your URL here:
+
+   googleScriptUrl: 'https://script.google.com/macros/s/YOUR_ID/exec',
+
+3. Save the file
+4. Push to GitHub (or ask your developer to redeploy)
+
+
+STEP 5 — CONFIRM DRIVE FILES ARE PUBLIC
+---------------------------------------
+Each MP3, WAV, and Cover image in your sheet must be shared as:
+   "Anyone with the link" → Viewer
+
+If a file is restricted, ZIP downloads and previews for that song will fail.
+
+
+TEST IT
+-------
+1. Stream test (replace YOUR_ID and FILE_ID from any MP3 column):
+
+https://script.google.com/macros/s/YOUR_ID/exec?action=stream&id=FILE_ID
+
+You should download/hear the MP3. If that works, ZIP downloads will work.
+
+2. On the site: queue one song → Download ZIP. Unzip and confirm each folder has:
+   - Artist - Title.mp3
+   - cover.jpg (if cover exists in sheet)
+   - one-sheet.html (printable promo sheet from sheet columns)
+
+
+AFTER UPDATING Code.gs
+----------------------
+If you already deployed Apps Script before, create a NEW deployment
+(Deploy → Manage deployments → Edit → Version: New version → Deploy)
+so ZIP and one-sheet changes take effect.
+
+
+ALTERNATIVE WHILE YOU WAIT
+--------------------------
+Each song card has an "Open MP3" link. DJs can click that to listen in
+a new tab even before Apps Script is deployed. Full ZIP packages (cover +
+one-sheet) require the Apps Script URL in config.js.
