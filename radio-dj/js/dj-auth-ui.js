@@ -4,26 +4,43 @@ const DjAuthUI = {
     const loginForm = document.getElementById('login-form');
     const signupForm = document.getElementById('signup-form');
     const loginError = document.getElementById('login-error');
-    const signupError = document.getElementById('signup-error');
+    let signupError = document.getElementById('signup-error');
     const tabs = gate ? gate.querySelectorAll('[data-auth-tab]') : [];
     const panels = gate ? gate.querySelectorAll('[data-auth-panel]') : [];
     const onAuthenticated = options.onAuthenticated || (() => {});
 
+    const ensureSignupError = () => {
+      let el = document.getElementById('signup-error');
+      if (el || !signupForm) return el;
+
+      el = document.createElement('div');
+      el.id = 'signup-error';
+      el.className = 'login-error';
+      el.setAttribute('role', 'alert');
+      el.setAttribute('aria-live', 'polite');
+      el.hidden = true;
+
+      const submitBtn = signupForm.querySelector('button[type="submit"]');
+      if (submitBtn) signupForm.insertBefore(el, submitBtn);
+      else signupForm.appendChild(el);
+
+      return el;
+    };
+
     const showError = (el, message) => {
-      if (!el) return;
+      if (!el || !message) return;
       el.textContent = message;
+      el.hidden = false;
       el.classList.add('show');
     };
 
     const clearErrors = () => {
-      if (loginError) {
-        loginError.textContent = '';
-        loginError.classList.remove('show');
-      }
-      if (signupError) {
-        signupError.textContent = '';
-        signupError.classList.remove('show');
-      }
+      [loginError, document.getElementById('signup-error')].forEach((el) => {
+        if (!el) return;
+        el.textContent = '';
+        el.hidden = true;
+        el.classList.remove('show');
+      });
     };
 
     const switchTab = (tabName) => {
@@ -112,7 +129,7 @@ const DjAuthUI = {
         DjAuthUI.updateWelcome();
         onAuthenticated();
       } catch (err) {
-        showError(signupError, err.message);
+        showError(ensureSignupError(), err.message);
       } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalHtml;

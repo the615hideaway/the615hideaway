@@ -72,10 +72,13 @@ const DjSignupForm = {
               <label for="${p('password')}">Password</label>
               <input type="password" id="${p('password')}" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" required>
             </div>
-            <label class="checkbox-field">
-              <input type="checkbox" id="${p('share-email')}">
-              <span>Share my DJ contact email with artists when I download their music</span>
-            </label>
+            <div class="dj-signup-option">
+              <p class="dj-signup-option-label">Email sharing (optional)</p>
+              <label class="checkbox-field checkbox-field--panel">
+                <input type="checkbox" id="${p('share-email')}">
+                <span>Share my DJ contact email with artists when I download their music</span>
+              </label>
+            </div>
           </div>
         </fieldset>`;
 
@@ -181,17 +184,11 @@ const DjSignupForm = {
       child.remove();
     });
 
-    const errorEl = document.getElementById('signup-error');
     const fieldsHost = document.createElement('div');
     fieldsHost.id = 'dj-signup-fields';
     fieldsHost.innerHTML = this.fieldsHtml({ mode: 'signup' });
     if (submitBtn) form.insertBefore(fieldsHost, submitBtn);
     else form.appendChild(fieldsHost);
-
-    if (errorEl && submitBtn) {
-      errorEl.setAttribute('aria-live', 'polite');
-      form.insertBefore(errorEl, submitBtn);
-    }
 
     form.dataset.djSignupMounted = '1';
   },

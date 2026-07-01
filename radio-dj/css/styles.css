@@ -2752,7 +2752,8 @@ body.demo-mode .detail-downloads .download-onesheet-btn {
   font-size: 0.9rem;
 }
 
-.login-error:empty {
+.login-error:empty,
+.login-error[hidden] {
   display: none !important;
   margin: 0;
   padding: 0;
@@ -2760,6 +2761,23 @@ body.demo-mode .detail-downloads .download-onesheet-btn {
 }
 
 .login-error.show { display: block; }
+
+.dj-signup-option {
+  margin-top: 0.15rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+}
+
+.dj-signup-option-label {
+  margin: 0 0 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--gold-bright, #d4af37);
+}
 
 /* Header */
 
