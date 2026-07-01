@@ -202,13 +202,16 @@ const DjAuthUI = {
     });
 
     const checkAfterBoot = async () => {
+      if (typeof DjAuth !== 'undefined' && DjAuth.isAuthenticated()) {
+        await DjAuth.ensureDjEmailOnCachedSession();
+        return false;
+      }
+
       if (typeof DjBoot !== 'undefined' && DjBoot.needsProfileCompletion?.()) {
         DjBoot.consumeNeedsProfileCompletion();
         await showProfileCompletion();
         return true;
       }
-
-      if (typeof DjAuth !== 'undefined' && DjAuth.isAuthenticated()) return false;
 
       try {
         if (await DjAuth.needsProfileCompletion()) {

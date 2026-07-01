@@ -120,6 +120,53 @@ const DjAuth = {
     return !!this.getSession()?.dj;
   },
 
+  async ensureDjEmailOnCachedSession() {
+    const cached = this.getSession();
+    if (!cached?.dj) return;
+
+    try {
+      const supabase = await this._getSupabase();
+      const { data } = await supabase.auth.getSession();
+      const email = String(data.session?.user?.email || '').trim().toLowerCase();
+      if (!email) return;
+
+      let changed = false;
+      if (!cached.dj.email) {
+        cached.dj.email = email;
+        changed = true;
+      }
+      if (!cached.dj.contactEmail) {
+        cached.dj.contactEmail = email;
+        changed = true;
+      }
+      if (changed) this.saveSession(cached);
+    } catch (_) {}
+  },
+
+  refreshSessionInBackground() {
+    if (this._refreshPromise) return this._refreshPromise;
+
+    this._refreshPromise = (async () => {
+      try {
+        const supabase = await this._getSupabase();
+        const { data } = await supabase.auth.getSession();
+        if (!data.session) return;
+        await this.completeSessionSetup(data.session);
+      } catch (err) {
+        if (String(err.message) === 'PROFILE_INCOMPLETE') return;
+        try {
+          const supabase = await this._getSupabase();
+          const { data } = await supabase.auth.getSession();
+          if (data.session) await this._activateSessionLight(data.session);
+        } catch (_) {}
+      } finally {
+        this._refreshPromise = null;
+      }
+    })();
+
+    return this._refreshPromise;
+  },
+
   async logout() {
     sessionStorage.removeItem(CONFIG.djSessionKey);
     localStorage.removeItem(CONFIG.djSessionKey);
@@ -292,6 +339,30 @@ const DjAuth = {
     return data;
   },
 
+  _mergePublicDj(publicDj, session, bridgeDj) {
+    const email = String(session?.user?.email || publicDj?.email || '').trim();
+    const merged = {
+      ...publicDj,
+      ...(bridgeDj || {}),
+      email: String(bridgeDj?.email || publicDj?.email || email || '').trim(),
+      contactEmail: String(bridgeDj?.contactEmail || publicDj?.contactEmail || email || '').trim(),
+    };
+    return merged;
+  },
+
+  async _activateSessionLight(session) {
+    const supabase = await this._getSupabase();
+    await this._ensureMemberProfile(supabase, session, 'dj');
+
+    const profileRow = await this._loadDjProfile(supabase, session.user.id);
+    if (!profileRow?.profile_complete) throw new Error('PROFILE_INCOMPLETE');
+
+    const publicDj = this._mergePublicDj(this.rowToPublic(profileRow, session), session);
+    const token = this.getToken() || '';
+    this.saveSession({ token, dj: publicDj });
+    return publicDj;
+  },
+
   async _activateSession(session, profileRow, profilePayload) {
     let publicDj = this.rowToPublic(profileRow, session);
     let token = '';
@@ -316,10 +387,11 @@ const DjAuth = {
         legacyDjId: profileRow?.legacy_dj_id
       });
       token = bridge.token || '';
-      if (bridge.dj) publicDj = bridge.dj;
+      publicDj = this._mergePublicDj(publicDj, session, bridge.dj);
     } catch (err) {
       if (!profileRow?.profile_complete) throw err;
       console.warn('Catalog bridge unavailable:', err.message);
+      publicDj = this._mergePublicDj(publicDj, session);
     }
 
     this.saveSession({ token, dj: publicDj });
@@ -327,7 +399,10 @@ const DjAuth = {
   },
 
   async restoreSession() {
-    if (this.isAuthenticated()) return this.getDj();
+    if (this.isAuthenticated()) {
+      await this.ensureDjEmailOnCachedSession();
+      return this.getDj();
+    }
     if (this._restorePromise) return this._restorePromise;
 
     this._restorePromise = (async () => {
@@ -337,12 +412,16 @@ const DjAuth = {
         const session = data.session;
         if (!session) return null;
 
-        return await this.completeSessionSetup(session);
-      } catch (err) {
-        if (String(err.message) === 'PROFILE_INCOMPLETE' && typeof DjBoot !== 'undefined') {
-          DjBoot._needsProfileCompletion = true;
-          return null;
+        try {
+          return await this.completeSessionSetup(session);
+        } catch (err) {
+          if (String(err.message) === 'PROFILE_INCOMPLETE' && typeof DjBoot !== 'undefined') {
+            DjBoot._needsProfileCompletion = true;
+            return null;
+          }
+          return await this._activateSessionLight(session);
         }
+      } catch (err) {
         console.warn('DJ session restore failed:', err.message);
         return null;
       } finally {

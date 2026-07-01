@@ -19,8 +19,10 @@ const DjBoot = {
     const supabase = await HideawayAuth.init();
     const session = await DjBoot._waitForSupabaseSession(supabase);
 
-    if (session && typeof DjAuth !== 'undefined' && DjAuth.isAuthenticated()) {
+    if (typeof DjAuth !== 'undefined' && DjAuth.isAuthenticated()) {
+      await DjAuth.ensureDjEmailOnCachedSession();
       HideawayAuth.clearAuthHash();
+      DjAuth.refreshSessionInBackground();
       return session;
     }
 
@@ -81,38 +83,29 @@ const DjBoot = {
 
   async bootPage(options = {}) {
     const { authUi, onAuthenticated, onGuest } = options;
-    const hadCachedSession = typeof DjAuth !== 'undefined' && DjAuth.isAuthenticated();
-
-    if (hadCachedSession) {
-      onAuthenticated?.();
-    }
 
     await this.ready();
 
-    if (authUi) {
-      if (typeof authUi.showBootMessage === 'function') {
-        authUi.showBootMessage(onAuthenticated);
-      }
-      if (typeof authUi.checkAfterBoot === 'function') {
-        const needsProfile = await authUi.checkAfterBoot();
-        if (needsProfile) {
-          onGuest?.();
-          return;
-        }
+    if (authUi?.showBootMessage) {
+      authUi.showBootMessage(onAuthenticated);
+    }
+
+    if (authUi?.checkAfterBoot) {
+      const needsProfile = await authUi.checkAfterBoot();
+      if (needsProfile) {
+        onGuest?.();
+        return;
       }
     }
 
-    if (typeof DjAuth !== 'undefined' && DjAuth.restoreSession) {
+    if (typeof DjAuth !== 'undefined' && !DjAuth.isAuthenticated() && DjAuth.restoreSession) {
       await DjAuth.restoreSession();
     }
 
     if (typeof DjAuth !== 'undefined' && DjAuth.isAuthenticated()) {
-      if (!hadCachedSession) onAuthenticated?.();
+      await DjAuth.ensureDjEmailOnCachedSession();
+      onAuthenticated?.();
       return;
-    }
-
-    if (hadCachedSession) {
-      await DjAuth.logout();
     }
 
     onGuest?.();

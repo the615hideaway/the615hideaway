@@ -55,12 +55,12 @@ const Spotlight = {
   isAdminDj(dj) {
     if (!dj) return false;
     const cfg = this.config();
-    const name = String(dj.name || '').trim().toLowerCase();
+    const name = String(dj.name || [dj.firstName, dj.lastName].filter(Boolean).join(' ') || '').trim().toLowerCase();
     const email = String(dj.email || dj.contactEmail || '').trim().toLowerCase();
-    const names = cfg.spotlightAdminDjs || [];
-    const emails = cfg.spotlightAdminEmails || [];
-    return names.some((entry) => String(entry || '').trim().toLowerCase() === name)
-      || emails.some((entry) => String(entry || '').trim().toLowerCase() === email);
+    const names = (cfg.spotlightAdminDjs || []).map((entry) => String(entry || '').trim().toLowerCase());
+    const emails = (cfg.spotlightAdminEmails || []).map((entry) => String(entry || '').trim().toLowerCase());
+    return names.includes(name)
+      || emails.includes(email);
   },
 
   isManualPick(song) {
