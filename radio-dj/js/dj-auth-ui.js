@@ -109,7 +109,7 @@ const DjAuthUI = {
       loginPassword.dataset.showToggle = '1';
       const showPassword = document.createElement('label');
       showPassword.className = 'login-show-password';
-      showPassword.innerHTML = '<input type="checkbox"> Show password';
+      showPassword.innerHTML = '<input type="checkbox" aria-label="Show Password"> Show Password';
       showPassword.querySelector('input').addEventListener('change', (event) => {
         loginPassword.type = event.target.checked ? 'text' : 'password';
       });

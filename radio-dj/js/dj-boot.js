@@ -17,8 +17,12 @@ const DjBoot = {
     }
 
     const supabase = await HideawayAuth.init();
-    const { data } = await supabase.auth.getSession();
-    const session = data.session;
+    const session = await DjBoot._waitForSupabaseSession(supabase);
+
+    if (session && typeof DjAuth !== 'undefined' && DjAuth.isAuthenticated()) {
+      HideawayAuth.clearAuthHash();
+      return session;
+    }
 
     if (session && typeof DjAuth !== 'undefined' && DjAuth.completeSessionSetup) {
       try {
@@ -64,8 +68,24 @@ const DjBoot = {
     return flag;
   },
 
+  async _waitForSupabaseSession(supabase, maxMs = 4000) {
+    const started = Date.now();
+    while (Date.now() - started < maxMs) {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) return data.session;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    const { data } = await supabase.auth.getSession();
+    return data.session || null;
+  },
+
   async bootPage(options = {}) {
     const { authUi, onAuthenticated, onGuest } = options;
+    const hadCachedSession = typeof DjAuth !== 'undefined' && DjAuth.isAuthenticated();
+
+    if (hadCachedSession) {
+      onAuthenticated?.();
+    }
 
     await this.ready();
 
@@ -80,13 +100,19 @@ const DjBoot = {
           return;
         }
       }
-    } else if (typeof DjAuth !== 'undefined' && DjAuth.restoreSession) {
+    }
+
+    if (typeof DjAuth !== 'undefined' && DjAuth.restoreSession) {
       await DjAuth.restoreSession();
     }
 
     if (typeof DjAuth !== 'undefined' && DjAuth.isAuthenticated()) {
-      onAuthenticated?.();
+      if (!hadCachedSession) onAuthenticated?.();
       return;
+    }
+
+    if (hadCachedSession) {
+      await DjAuth.logout();
     }
 
     onGuest?.();

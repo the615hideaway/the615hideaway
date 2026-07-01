@@ -339,6 +339,10 @@ const DjAuth = {
 
         return await this.completeSessionSetup(session);
       } catch (err) {
+        if (String(err.message) === 'PROFILE_INCOMPLETE' && typeof DjBoot !== 'undefined') {
+          DjBoot._needsProfileCompletion = true;
+          return null;
+        }
         console.warn('DJ session restore failed:', err.message);
         return null;
       } finally {
