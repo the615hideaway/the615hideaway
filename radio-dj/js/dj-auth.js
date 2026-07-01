@@ -91,14 +91,12 @@ const DjAuth = {
   },
 
   getSession() {
-    let raw = sessionStorage.getItem(CONFIG.djSessionKey);
-    if (!raw) {
-      raw = localStorage.getItem(CONFIG.djSessionKey);
-      if (raw) {
-        try {
-          sessionStorage.setItem(CONFIG.djSessionKey, raw);
-        } catch (_) {}
-      }
+    let raw = localStorage.getItem(CONFIG.djSessionKey);
+    if (!raw) raw = sessionStorage.getItem(CONFIG.djSessionKey);
+    if (raw) {
+      try {
+        sessionStorage.setItem(CONFIG.djSessionKey, raw);
+      } catch (_) {}
     }
     if (!raw) return null;
     try {
@@ -106,6 +104,26 @@ const DjAuth = {
     } catch (err) {
       return null;
     }
+  },
+
+  _hasSupabaseAuthToken() {
+    try {
+      for (let i = 0; i < localStorage.length; i += 1) {
+        const key = localStorage.key(i);
+        if (!key) continue;
+        if (key === 'the615hideaway-supabase-auth' || (key.startsWith('sb-') && key.endsWith('-auth-token'))) {
+          const parsed = JSON.parse(localStorage.getItem(key) || '{}');
+          if (parsed?.access_token || parsed?.currentSession?.access_token) return true;
+        }
+      }
+    } catch (_) {}
+    return false;
+  },
+
+  clearLocalSession() {
+    sessionStorage.removeItem(CONFIG.djSessionKey);
+    localStorage.removeItem(CONFIG.djSessionKey);
+    sessionStorage.removeItem(CONFIG.authKey);
   },
 
   getDj() {
@@ -143,34 +161,8 @@ const DjAuth = {
     } catch (_) {}
   },
 
-  refreshSessionInBackground() {
-    if (this._refreshPromise) return this._refreshPromise;
-
-    this._refreshPromise = (async () => {
-      try {
-        const supabase = await this._getSupabase();
-        const { data } = await supabase.auth.getSession();
-        if (!data.session) return;
-        await this.completeSessionSetup(data.session);
-      } catch (err) {
-        if (String(err.message) === 'PROFILE_INCOMPLETE') return;
-        try {
-          const supabase = await this._getSupabase();
-          const { data } = await supabase.auth.getSession();
-          if (data.session) await this._activateSessionLight(data.session);
-        } catch (_) {}
-      } finally {
-        this._refreshPromise = null;
-      }
-    })();
-
-    return this._refreshPromise;
-  },
-
   async logout() {
-    sessionStorage.removeItem(CONFIG.djSessionKey);
-    localStorage.removeItem(CONFIG.djSessionKey);
-    sessionStorage.removeItem(CONFIG.authKey);
+    this.clearLocalSession();
     sessionStorage.removeItem(CONFIG.artistSessionKey);
     try {
       await HideawayAuth.signOut();
@@ -350,17 +342,84 @@ const DjAuth = {
     return merged;
   },
 
+  _profileRowUsable(profileRow) {
+    if (!profileRow) return false;
+    if (profileRow.profile_complete) return true;
+    return !!(
+      profileRow.first_name
+      && profileRow.last_name
+      && profileRow.program_name
+      && profileRow.station_call_letters
+    );
+  },
+
+  _minimalDjFromSession(session, profileRow) {
+    const row = profileRow || this._metadataToProfileRow(session.user.user_metadata || {}, session) || {
+      first_name: '',
+      last_name: '',
+      program_name: '',
+      station_call_letters: '',
+      contact_email: session.user.email || '',
+      profile_complete: false
+    };
+    return this._mergePublicDj(this.rowToPublic(row, session), session);
+  },
+
   async _activateSessionLight(session) {
     const supabase = await this._getSupabase();
     await this._ensureMemberProfile(supabase, session, 'dj');
 
     const profileRow = await this._loadDjProfile(supabase, session.user.id);
-    if (!profileRow?.profile_complete) throw new Error('PROFILE_INCOMPLETE');
+    if (!this._profileRowUsable(profileRow)) throw new Error('PROFILE_INCOMPLETE');
 
     const publicDj = this._mergePublicDj(this.rowToPublic(profileRow, session), session);
     const token = this.getToken() || '';
     this.saveSession({ token, dj: publicDj });
     return publicDj;
+  },
+
+  async forceRestoreFromSupabase() {
+    const supabase = await this._getSupabase();
+    const { data } = await supabase.auth.getSession();
+    const session = data.session;
+    if (!session) return null;
+
+    try {
+      return await this._activateSessionLight(session);
+    } catch (err) {
+      if (String(err.message) === 'PROFILE_INCOMPLETE' && typeof DjBoot !== 'undefined') {
+        DjBoot._needsProfileCompletion = true;
+      }
+    }
+
+    try {
+      const profileRow = await this._loadDjProfile(supabase, session.user.id);
+      if (profileRow) {
+        const publicDj = this._minimalDjFromSession(session, profileRow);
+        this.saveSession({ token: this.getToken() || '', dj: publicDj });
+        return publicDj;
+      }
+    } catch (_) {}
+
+    const publicDj = this._minimalDjFromSession(session);
+    this.saveSession({ token: this.getToken() || '', dj: publicDj });
+    return publicDj;
+  },
+
+  async resolveSession() {
+    if (this.getSession()?.dj) {
+      await this.ensureDjEmailOnCachedSession();
+      return this.getDj();
+    }
+
+    const restored = await this.restoreSession();
+    if (restored) return restored;
+
+    if (this._hasSupabaseAuthToken()) {
+      return this.forceRestoreFromSupabase();
+    }
+
+    return null;
   },
 
   async _activateSession(session, profileRow, profilePayload) {
@@ -417,9 +476,15 @@ const DjAuth = {
         } catch (err) {
           if (String(err.message) === 'PROFILE_INCOMPLETE' && typeof DjBoot !== 'undefined') {
             DjBoot._needsProfileCompletion = true;
-            return null;
           }
-          return await this._activateSessionLight(session);
+          try {
+            return await this._activateSessionLight(session);
+          } catch (lightErr) {
+            if (String(lightErr.message) === 'PROFILE_INCOMPLETE' && typeof DjBoot !== 'undefined') {
+              DjBoot._needsProfileCompletion = true;
+            }
+            return this.forceRestoreFromSupabase();
+          }
         }
       } catch (err) {
         console.warn('DJ session restore failed:', err.message);

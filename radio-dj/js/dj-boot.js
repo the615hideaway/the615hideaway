@@ -2,6 +2,8 @@ const DjBoot = {
   async ready() {
     if (typeof HideawayAuth === 'undefined') return null;
 
+    DjBoot._initAuthListener();
+
     try {
       await HideawayAuth.init();
     } catch (err) {
@@ -19,10 +21,9 @@ const DjBoot = {
     const supabase = await HideawayAuth.init();
     const session = await DjBoot._waitForSupabaseSession(supabase);
 
-    if (typeof DjAuth !== 'undefined' && DjAuth.isAuthenticated()) {
+    if (typeof DjAuth !== 'undefined' && DjAuth.getSession()?.dj) {
       await DjAuth.ensureDjEmailOnCachedSession();
       HideawayAuth.clearAuthHash();
-      DjAuth.refreshSessionInBackground();
       return session;
     }
 
@@ -47,11 +48,34 @@ const DjBoot = {
       }
     }
 
-    if (typeof DjAuth !== 'undefined' && DjAuth.restoreSession) {
-      await DjAuth.restoreSession();
+    if (typeof DjAuth !== 'undefined' && DjAuth.resolveSession) {
+      await DjAuth.resolveSession();
     }
 
     return session;
+  },
+
+  _initAuthListener() {
+    if (DjBoot._authListenerReady || typeof HideawayAuth === 'undefined') return;
+    DjBoot._authListenerReady = true;
+
+    HideawayAuth.init().then((supabase) => {
+      supabase.auth.onAuthStateChange(async (event, session) => {
+        if (!session || typeof DjAuth === 'undefined') return;
+        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
+          if (!DjAuth.getSession()?.dj) {
+            await DjAuth.resolveSession();
+          }
+        }
+        if (event === 'SIGNED_OUT') {
+          DjAuth.clearLocalSession();
+        }
+      });
+    }).catch(() => {});
+  },
+
+  _setAuthPending(pending) {
+    document.body.classList.toggle('auth-booting', !!pending);
   },
 
   consumeMessage() {
@@ -70,7 +94,7 @@ const DjBoot = {
     return flag;
   },
 
-  async _waitForSupabaseSession(supabase, maxMs = 4000) {
+  async _waitForSupabaseSession(supabase, maxMs = 5000) {
     const started = Date.now();
     while (Date.now() - started < maxMs) {
       const { data } = await supabase.auth.getSession();
@@ -83,31 +107,48 @@ const DjBoot = {
 
   async bootPage(options = {}) {
     const { authUi, onAuthenticated, onGuest } = options;
+    const mayStaySignedIn = typeof DjAuth !== 'undefined'
+      && (DjAuth.getSession()?.dj || DjAuth._hasSupabaseAuthToken?.());
 
-    await this.ready();
+    DjBoot._setAuthPending(true);
 
-    if (authUi?.showBootMessage) {
-      authUi.showBootMessage(onAuthenticated);
-    }
+    try {
+      await this.ready();
 
-    if (authUi?.checkAfterBoot) {
-      const needsProfile = await authUi.checkAfterBoot();
-      if (needsProfile) {
-        onGuest?.();
+      if (typeof DjAuth !== 'undefined' && DjAuth.resolveSession) {
+        await DjAuth.resolveSession();
+      }
+
+      if (authUi?.showBootMessage) {
+        authUi.showBootMessage(onAuthenticated);
+      }
+
+      if (authUi?.checkAfterBoot) {
+        const needsProfile = await authUi.checkAfterBoot();
+        if (needsProfile) {
+          onGuest?.();
+          return;
+        }
+      }
+
+      if (typeof DjAuth !== 'undefined' && DjAuth.getSession()?.dj) {
+        await DjAuth.ensureDjEmailOnCachedSession();
+        onAuthenticated?.();
         return;
       }
-    }
 
-    if (typeof DjAuth !== 'undefined' && !DjAuth.isAuthenticated() && DjAuth.restoreSession) {
-      await DjAuth.restoreSession();
-    }
+      if (mayStaySignedIn && typeof DjAuth !== 'undefined' && DjAuth._hasSupabaseAuthToken?.()) {
+        await DjAuth.forceRestoreFromSupabase();
+        if (DjAuth.getSession()?.dj) {
+          await DjAuth.ensureDjEmailOnCachedSession();
+          onAuthenticated?.();
+          return;
+        }
+      }
 
-    if (typeof DjAuth !== 'undefined' && DjAuth.isAuthenticated()) {
-      await DjAuth.ensureDjEmailOnCachedSession();
-      onAuthenticated?.();
-      return;
+      onGuest?.();
+    } finally {
+      DjBoot._setAuthPending(false);
     }
-
-    onGuest?.();
   }
 };

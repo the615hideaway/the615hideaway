@@ -202,7 +202,7 @@ const DjAuthUI = {
     });
 
     const checkAfterBoot = async () => {
-      if (typeof DjAuth !== 'undefined' && DjAuth.isAuthenticated()) {
+      if (typeof DjAuth !== 'undefined' && DjAuth.getSession()?.dj) {
         await DjAuth.ensureDjEmailOnCachedSession();
         return false;
       }

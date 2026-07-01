@@ -18,7 +18,9 @@
         auth: {
           persistSession: true,
           autoRefreshToken: true,
-          detectSessionInUrl: true
+          detectSessionInUrl: true,
+          storageKey: 'the615hideaway-supabase-auth',
+          storage: window.localStorage
         }
       });
 
