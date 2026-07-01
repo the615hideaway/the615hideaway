@@ -6,8 +6,6 @@ module.exports = async (req, res) => {
 
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
-  const scriptUrl = process.env.RADIO_APPS_SCRIPT_URL || '';
-  const serviceKey = process.env.RADIO_SERVICE_KEY || '';
 
   if (!supabaseUrl || !supabaseAnonKey) {
     res.status(500).json({ error: 'Supabase is not configured on the server.' });
@@ -24,8 +22,8 @@ module.exports = async (req, res) => {
   const userResponse = await fetch(`${supabaseUrl}/auth/v1/user`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
-      apikey: supabaseAnonKey
-    }
+      apikey: supabaseAnonKey,
+    },
   });
 
   if (!userResponse.ok) {
@@ -49,51 +47,10 @@ module.exports = async (req, res) => {
     profile = {};
   }
 
-  if (!scriptUrl.includes('script.google.com')) {
-    res.status(200).json({
-      token: '',
-      dj: mapDjFromProfile(profile, user),
-      sheetLinked: false
-    });
-    return;
-  }
-
-  if (!serviceKey) {
-    res.status(500).json({
-      error: 'Radio Now sheet bridge is not configured. Add RADIO_SERVICE_KEY and RADIO_APPS_SCRIPT_URL in Vercel.'
-    });
-    return;
-  }
-
-  const scriptResponse = await fetch(scriptUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({
-      action: 'dj_session_for_supabase',
-      serviceKey,
-      email,
-      profile
-    })
-  });
-
-  let data;
-  try {
-    data = await scriptResponse.json();
-  } catch (_) {
-    res.status(502).json({ error: 'Could not reach the Radio Now catalog service.' });
-    return;
-  }
-
-  if (!data.success) {
-    res.status(400).json({ error: data.error || 'Could not link Radio Now catalog session.' });
-    return;
-  }
-
   res.status(200).json({
-    token: data.token || '',
-    dj: data.dj || mapDjFromProfile(profile, user),
-    sheetLinked: true,
-    legacyDjId: data.dj?.id || ''
+    token: '',
+    dj: mapDjFromProfile(profile, user),
+    sheetLinked: false,
   });
 };
 
@@ -122,7 +79,7 @@ function mapDjFromProfile(profile, user) {
     programStartTime: profile.programStartTime || profile.program_start_time || '',
     programEndTime: profile.programEndTime || profile.program_end_time || '',
     programTimezone: profile.programTimezone || profile.program_timezone || '',
-    programDays: profile.programDays || profile.program_days || ''
+    programDays: profile.programDays || profile.program_days || '',
   };
 }
 

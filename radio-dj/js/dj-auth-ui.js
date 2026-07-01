@@ -280,9 +280,23 @@ const DjAuthUI = {
 
   bindLogout(button, onLogout) {
     button?.addEventListener('click', async () => {
-      await DjAuth.logout();
-      DjAuthUI.updateWelcome();
-      onLogout();
+      button.disabled = true;
+      try {
+        if (typeof AccountAuth !== 'undefined') {
+          await AccountAuth.logout();
+        } else {
+          await DjAuth.logout();
+        }
+        DjAuthUI.updateWelcome();
+        if (typeof ArtistAuthUI !== 'undefined') ArtistAuthUI.updateWelcome();
+        if (typeof SiteNav !== 'undefined') {
+          const nav = document.querySelector('[data-site-nav]');
+          SiteNav.init(nav?.dataset.navActive);
+        }
+        onLogout?.();
+      } finally {
+        button.disabled = false;
+      }
     });
   },
 };

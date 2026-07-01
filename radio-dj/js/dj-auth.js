@@ -2,6 +2,7 @@ const DjAuth = {
   _restorePromise: null,
   _signedOut: false,
   _signingOut: false,
+  signedOutKey: 'radio_now_signed_out',
 
   async _getSupabase() {
     if (typeof HideawayAuth === 'undefined') {
@@ -122,7 +123,31 @@ const DjAuth = {
     return this.getSession()?.token || '';
   },
 
+  isExplicitlySignedOut() {
+    if (this._signedOut) return true;
+    try {
+      return localStorage.getItem(this.signedOutKey) === '1';
+    } catch (_) {
+      return false;
+    }
+  },
+
+  _setSignedOutFlag() {
+    this._signedOut = true;
+    try {
+      localStorage.setItem(this.signedOutKey, '1');
+    } catch (_) {}
+  },
+
+  _clearSignedOutFlag() {
+    this._signedOut = false;
+    try {
+      localStorage.removeItem(this.signedOutKey);
+    } catch (_) {}
+  },
+
   isAuthenticated() {
+    if (this.isExplicitlySignedOut()) return false;
     return !!this.getSession()?.dj;
   },
 
@@ -163,14 +188,26 @@ const DjAuth = {
 
   async logout() {
     this._signingOut = true;
-    this._signedOut = true;
+    this._setSignedOutFlag();
     this.clearLocalSession();
     sessionStorage.removeItem(CONFIG.artistSessionKey);
-    try {
-      const supabase = await this._getSupabase();
-      await supabase.auth.signOut();
-    } catch (_) {}
     this._clearSupabaseAuthStorage();
+    try {
+      if (typeof HideawayAuth !== 'undefined' && HideawayAuth.signOut) {
+        await HideawayAuth.signOut();
+      } else {
+        const supabase = await this._getSupabase();
+        await supabase.auth.signOut({ scope: 'local' });
+        if (typeof HideawayAuth !== 'undefined' && HideawayAuth.resetClient) {
+          HideawayAuth.resetClient();
+        }
+      }
+    } catch (_) {
+      this._clearSupabaseAuthStorage();
+      if (typeof HideawayAuth !== 'undefined' && HideawayAuth.resetClient) {
+        HideawayAuth.resetClient();
+      }
+    }
     this._signingOut = false;
   },
 
@@ -291,7 +328,7 @@ const DjAuth = {
   },
 
   async completeSessionSetup(session) {
-    this._signedOut = false;
+    this._clearSignedOutFlag();
     const supabase = await this._getSupabase();
     await this._ensureMemberProfile(supabase, session, 'dj');
     await this._ensureDjProfileFromMetadata(supabase, session);
@@ -378,23 +415,43 @@ const DjAuth = {
     return publicDj;
   },
 
+  async _getSupabaseSession(supabase) {
+    const { data } = await supabase.auth.getSession();
+    if (data.session) return data.session;
+
+    try {
+      const refreshed = await supabase.auth.refreshSession();
+      return refreshed.data.session || null;
+    } catch (_) {
+      return null;
+    }
+  },
+
   async resolveSession() {
     if (this._signingOut) return null;
 
-    const supabase = await this._getSupabase();
-    const { data } = await supabase.auth.getSession();
-    const session = data.session;
-
-    if (!session) {
+    if (this.isExplicitlySignedOut()) {
       this.clearLocalSession();
       return null;
     }
 
-    this._signedOut = false;
+    const cached = this.getSession();
+    const supabase = await this._getSupabase();
+    const session = await this._getSupabaseSession(supabase);
 
-    if (this.getSession()?.dj) {
+    if (!session) {
+      if (cached?.dj) {
+        return cached.dj;
+      }
+      this.clearLocalSession();
+      return null;
+    }
+
+    this._clearSignedOutFlag();
+
+    if (cached?.dj) {
       await this.ensureDjEmailOnCachedSession();
-      return this.getDj();
+      return cached.dj;
     }
 
     try {
@@ -407,6 +464,7 @@ const DjAuth = {
         return publicDj;
       }
       console.warn('DJ session resolve failed:', err.message);
+      if (cached?.dj) return cached.dj;
       return null;
     }
   },
@@ -464,7 +522,7 @@ const DjAuth = {
       throw error;
     }
 
-    this._signedOut = false;
+    this._clearSignedOutFlag();
     try {
       return await this.completeSessionSetup(data.session);
     } catch (err) {

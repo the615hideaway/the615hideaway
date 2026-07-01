@@ -58,6 +58,11 @@ const DjBoot = {
     DjBoot._setAuthPending(true);
 
     try {
+      if (typeof DjAuth !== 'undefined' && DjAuth.isExplicitlySignedOut?.()) {
+        onGuest?.();
+        return;
+      }
+
       await this.ready();
 
       if (typeof DjAuth !== 'undefined' && DjAuth.resolveSession) {

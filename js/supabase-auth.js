@@ -2,6 +2,11 @@
   let client = null;
   let initPromise = null;
 
+  function resetClient() {
+    client = null;
+    initPromise = null;
+  }
+
   async function init() {
     if (client) return client;
     if (initPromise) return initPromise;
@@ -112,9 +117,11 @@
   }
 
   async function signOut() {
-    const supabase = await init();
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    try {
+      const supabase = await init();
+      await supabase.auth.signOut({ scope: 'local' });
+    } catch (_) {}
+    resetClient();
   }
 
   async function updateNavAuthLink(linkId) {
@@ -138,6 +145,7 @@
 
   global.HideawayAuth = {
     init,
+    resetClient,
     parseAuthHashError,
     clearAuthHash,
     getSession,

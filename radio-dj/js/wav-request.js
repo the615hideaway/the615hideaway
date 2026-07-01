@@ -52,13 +52,63 @@ Radio Now — (615) Hideaway Entertainment`;
     const dj = this.getDjProfile();
     if (!dj) throw new Error('Sign in with your DJ account to send a WAV request.');
 
-    return DjAuth.authRequest('wav_request_send', {
-      songId: song.id || '',
-      songTitle: song.songTitle || '',
-      artistName: song.artistName || '',
-      recordLabel: song.recordLabel || '',
-      contactEmail: song.contactEmail || '',
-      musicStyle: song.musicStyle || '',
+    const contactEmail = Utils.normalizeContactEmail(song?.contactEmail);
+    if (!contactEmail) throw new Error('This song has no contact email listed.');
+
+    const supabase = await HideawayAuth.init();
+    const { data: sessionData } = await supabase.auth.getSession();
+    const session = sessionData.session;
+    if (!session) throw new Error('Sign in with your DJ account to send a WAV request.');
+
+    const response = await fetch('/api/radio-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + session.access_token,
+      },
+      body: JSON.stringify({
+        type: 'wav_request',
+        songId: song.id || '',
+        songTitle: song.songTitle || '',
+        artistName: song.artistName || '',
+        recordLabel: song.recordLabel || '',
+        contactEmail,
+        musicStyle: song.musicStyle || '',
+      }),
     });
+
+    let data = {};
+    try {
+      data = await response.json();
+    } catch (_) {}
+
+    if (!response.ok) {
+      if (response.status === 503) {
+        const mailto = Utils.openWavRequestMailto(song, dj);
+        if (mailto.ok) {
+          if (typeof DjActivity !== 'undefined') {
+            await DjActivity.log(song, 'wav_request', 'mailto');
+          }
+          return {
+            success: true,
+            sentTo: mailto.email,
+            replyTo: dj.contactEmail || dj.email || '',
+            subject: this.draft(song, dj).subject,
+          };
+        }
+      }
+      throw new Error(data.error || 'Could not send WAV request.');
+    }
+
+    if (typeof DjActivity !== 'undefined') {
+      await DjActivity.log(song, 'wav_request', 'email');
+    }
+
+    return {
+      success: true,
+      sentTo: data.sentTo || contactEmail,
+      replyTo: data.replyTo || dj.contactEmail || dj.email || '',
+      subject: data.subject || '',
+    };
   },
 };

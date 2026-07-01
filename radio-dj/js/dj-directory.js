@@ -1,7 +1,67 @@
 const DjDirectory = {
+  rowToDj(row) {
+    const firstName = row.first_name || '';
+    const lastName = row.last_name || '';
+    const name = [firstName, lastName].filter(Boolean).join(' ');
+    const shareEmail = !!row.share_email;
+    const contactEmail = row.contact_email || '';
+
+    return {
+      id: row.id,
+      name,
+      email: shareEmail ? contactEmail : '',
+      contactEmail: shareEmail ? contactEmail : '',
+      station: row.station_call_letters || '',
+      showName: row.program_name || '',
+      shareEmail,
+      status: 'active',
+      firstName,
+      lastName,
+      programName: row.program_name || '',
+      programFormat: row.program_format || '',
+      stationCallLetters: row.station_call_letters || '',
+      stationFrequency: row.station_frequency || '',
+      state: row.state || '',
+      stationWebsite: row.station_website || '',
+      programWebsite: row.program_website || '',
+      programStartTime: row.program_start_time || '',
+      programEndTime: row.program_end_time || '',
+      programTimezone: row.program_timezone || '',
+      programDays: row.program_days || '',
+    };
+  },
+
   async fetchAll() {
-    const data = await AccountAuth.authRequest('dj_directory');
-    return Array.isArray(data.djs) ? data.djs : [];
+    const supabase = await HideawayAuth.init();
+    const { data, error } = await supabase
+      .from('dj_profiles')
+      .select([
+        'id',
+        'first_name',
+        'last_name',
+        'program_name',
+        'program_format',
+        'station_call_letters',
+        'station_frequency',
+        'state',
+        'station_website',
+        'program_website',
+        'program_start_time',
+        'program_end_time',
+        'program_timezone',
+        'program_days',
+        'contact_email',
+        'share_email',
+        'profile_complete',
+      ].join(', '))
+      .eq('profile_complete', true)
+      .order('last_name', { ascending: true });
+
+    if (error) throw error;
+
+    return (data || [])
+      .map((row) => this.rowToDj(row))
+      .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
   },
 
   displayName(dj) {
