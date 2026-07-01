@@ -1371,7 +1371,34 @@ a:hover { color: var(--white); }
 }
 
 .checkbox-field--panel {
-  margin-bottom: 0.85rem;
+  margin: 0;
+  padding: 0.85rem 0.95rem;
+  min-height: 3.25rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.checkbox-field--panel:hover {
+  border-color: rgba(212, 175, 55, 0.35);
+  background: rgba(212, 175, 55, 0.06);
+}
+
+.checkbox-field--panel input[type="checkbox"] {
+  width: 1.35rem;
+  height: 1.35rem;
+  min-width: 1.35rem;
+  min-height: 1.35rem;
+  margin: 0.1rem 0 0;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.checkbox-field--panel span {
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
 }
 
 .dj-dashboard-page {
@@ -2763,16 +2790,16 @@ body.demo-mode .detail-downloads .download-onesheet-btn {
 .login-error.show { display: block; }
 
 .dj-signup-option {
-  margin-top: 0.15rem;
-  padding: 0.75rem 0.85rem;
-  border-radius: 8px;
+  margin-top: 0.35rem;
+  padding: 0.9rem 1rem 1rem;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
 }
 
 .dj-signup-option-label {
-  margin: 0 0 0.45rem;
-  font-size: 0.78rem;
+  margin: 0 0 0.65rem;
+  font-size: 0.82rem;
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
