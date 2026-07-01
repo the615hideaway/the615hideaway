@@ -3,6 +3,11 @@
   "private": true,
   "description": "The 615 Hideaway — Supabase + Vercel + Resend",
   "scripts": {
+    "check:live": "node scripts/check-live.mjs",
+    "import:catalog": "node scripts/import-catalog.mjs",
+    "vercel:login": "vercel login",
+    "vercel:link": "vercel link",
+    "vercel:env": "vercel env ls",
     "dev": "vercel dev",
     "deploy": "vercel --prod"
   },
