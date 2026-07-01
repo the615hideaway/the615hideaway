@@ -43,6 +43,7 @@
   }
 
   function showApp() {
+    if (typeof DjBoot !== 'undefined') DjBoot.markAuthenticated();
     loginGate.classList.add('hidden');
     appShell.classList.remove('hidden');
     if (isDemoMode) {

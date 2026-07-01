@@ -81,6 +81,11 @@ const DjAuth = {
   },
 
   saveSession(data) {
+    if (!data?.dj || typeof data.dj !== 'object') {
+      console.warn('DjAuth.saveSession skipped: missing dj payload');
+      return;
+    }
+
     const payload = JSON.stringify({
       token: data.token || '',
       dj: data.dj
@@ -91,6 +96,8 @@ const DjAuth = {
     } catch (_) {}
     sessionStorage.removeItem(CONFIG.authKey);
     sessionStorage.removeItem(CONFIG.artistSessionKey);
+    localStorage.removeItem(CONFIG.artistSessionKey);
+    this._clearSignedOutFlag();
   },
 
   getSession() {
@@ -408,18 +415,35 @@ const DjAuth = {
 
   async _activateSessionLight(session) {
     const supabase = await this._getSupabase();
-    await this._ensureMemberProfile(supabase, session, 'dj');
 
-    const profileRow = await this._loadDjProfile(supabase, session.user.id);
-    if (!this._profileRowUsable(profileRow)) throw new Error('PROFILE_INCOMPLETE');
+    try {
+      await this._ensureMemberProfile(supabase, session, 'dj');
+    } catch (err) {
+      console.warn('Member profile upsert skipped:', err.message);
+    }
 
-    const publicDj = this._mergePublicDj(this.rowToPublic(profileRow, session), session);
+    let profileRow = null;
+    try {
+      profileRow = await this._loadDjProfile(supabase, session.user.id);
+    } catch (err) {
+      console.warn('DJ profile load failed:', err.message);
+    }
+
+    if (!this._profileRowUsable(profileRow)) {
+      throw new Error('PROFILE_INCOMPLETE');
+    }
+
+    const publicDj = this._mergePublicDj(this.rowToPublic(profileRow, session) || this._minimalDjFromSession(session, profileRow), session);
     const token = this.getToken() || '';
     this.saveSession({ token, dj: publicDj });
     return publicDj;
   },
 
   async _getSupabaseSession(supabase) {
+    if (typeof HideawayAuth !== 'undefined' && HideawayAuth.waitForSession) {
+      return HideawayAuth.waitForSession(4000);
+    }
+
     const { data } = await supabase.auth.getSession();
     if (data.session) return data.session;
 
@@ -434,29 +458,35 @@ const DjAuth = {
   async resolveSession() {
     if (this._signingOut) return null;
 
+    const cached = this.getSession();
+
     if (this.isExplicitlySignedOut()) {
-      this.clearLocalSession();
-      return null;
+      if (cached?.dj) {
+        this._clearSignedOutFlag();
+      } else {
+        return null;
+      }
     }
 
-    const cached = this.getSession();
+    if (cached?.dj) {
+      try {
+        const supabase = await this._getSupabase();
+        const session = await this._getSupabaseSession(supabase);
+        if (session) {
+          await this.ensureDjEmailOnCachedSession();
+        }
+      } catch (_) {}
+      return cached.dj;
+    }
+
     const supabase = await this._getSupabase();
     const session = await this._getSupabaseSession(supabase);
 
     if (!session) {
-      if (cached?.dj) {
-        return cached.dj;
-      }
-      this.clearLocalSession();
       return null;
     }
 
     this._clearSignedOutFlag();
-
-    if (cached?.dj) {
-      await this.ensureDjEmailOnCachedSession();
-      return cached.dj;
-    }
 
     try {
       return await this._activateSessionLight(session);
@@ -468,8 +498,9 @@ const DjAuth = {
         return publicDj;
       }
       console.warn('DJ session resolve failed:', err.message);
-      if (cached?.dj) return cached.dj;
-      return null;
+      const publicDj = this._minimalDjFromSession(session);
+      this.saveSession({ token: '', dj: publicDj });
+      return publicDj;
     }
   },
 

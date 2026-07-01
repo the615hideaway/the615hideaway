@@ -58,6 +58,37 @@
     return data.session;
   }
 
+  async function waitForSession(timeoutMs = 4000) {
+    const supabase = await init();
+    const { data } = await supabase.auth.getSession();
+    if (data.session) return data.session;
+
+    return new Promise((resolve) => {
+      let settled = false;
+      let subscription = null;
+
+      const finish = (session) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        subscription?.unsubscribe();
+        resolve(session || null);
+      };
+
+      const listener = supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          finish(session);
+        }
+      });
+      subscription = listener.data?.subscription || listener.subscription;
+
+      const timer = setTimeout(async () => {
+        const { data: retry } = await supabase.auth.getSession();
+        finish(retry.session);
+      }, timeoutMs);
+    });
+  }
+
   async function ensureProfile(session) {
     const supabase = await init();
     const meta = session.user.user_metadata || {};
@@ -149,6 +180,7 @@
     parseAuthHashError,
     clearAuthHash,
     getSession,
+    waitForSession,
     getProfile,
     ensureProfile,
     signOut,

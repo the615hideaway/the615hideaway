@@ -132,6 +132,7 @@ const DjAuthUI = {
         await DjAuth.login(email, password);
         loginForm.reset();
         DjAuthUI.updateWelcome();
+        if (typeof DjBoot !== 'undefined') DjBoot.markAuthenticated();
         onAuthenticated();
       } catch (err) {
         showError(loginError, err.message);
@@ -170,6 +171,7 @@ const DjAuthUI = {
           profileCompletionActive = false;
           signupForm.reset();
           DjAuthUI.updateWelcome();
+          if (typeof DjBoot !== 'undefined') DjBoot.markAuthenticated();
           onAuthenticated();
           return;
         }
@@ -188,6 +190,7 @@ const DjAuthUI = {
         }
         signupForm.reset();
         DjAuthUI.updateWelcome();
+        if (typeof DjBoot !== 'undefined') DjBoot.markAuthenticated();
         onAuthenticated();
       } catch (err) {
         showError(ensureSignupError(), err.message);

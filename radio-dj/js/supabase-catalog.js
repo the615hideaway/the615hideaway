@@ -63,8 +63,8 @@ const SupabaseCatalog = {
     let total = null;
 
     while (true) {
-      const url = `/api/catalog?offset=${offset}&limit=${batchSize}`;
-      const response = await fetch(url, { cache: 'no-store' });
+      const apiBase = `${window.location.origin}/api/catalog`;
+      const response = await fetch(`${apiBase}?offset=${offset}&limit=${batchSize}`, { cache: 'no-store' });
       const payload = await response.json().catch(() => ({}));
 
       if (!response.ok) {

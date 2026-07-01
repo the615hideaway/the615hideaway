@@ -1,4 +1,15 @@
 const DjBoot = {
+  _authState: 'pending',
+
+  markAuthenticated() {
+    this._authState = 'authenticated';
+  },
+
+  markGuest() {
+    if (this._authState === 'authenticated') return;
+    this._authState = 'guest';
+  },
+
   async ready() {
     if (typeof HideawayAuth === 'undefined') return null;
 
@@ -16,9 +27,7 @@ const DjBoot = {
       return null;
     }
 
-    const supabase = await HideawayAuth.init();
-    const { data } = await supabase.auth.getSession();
-    const session = data.session;
+    const session = await HideawayAuth.waitForSession();
 
     if (session) {
       const params = new URLSearchParams(window.location.search);
@@ -55,12 +64,29 @@ const DjBoot = {
   async bootPage(options = {}) {
     const { authUi, onAuthenticated, onGuest } = options;
 
+    this._authState = 'pending';
     DjBoot._setAuthPending(true);
 
+    const finishAuthenticated = () => {
+      this.markAuthenticated();
+      onAuthenticated?.();
+    };
+
+    const finishGuest = () => {
+      this.markGuest();
+      if (this._authState === 'authenticated') return;
+      onGuest?.();
+    };
+
     try {
-      if (typeof DjAuth !== 'undefined' && DjAuth.isExplicitlySignedOut?.()) {
-        onGuest?.();
+      const cachedBeforeBoot = typeof DjAuth !== 'undefined' ? DjAuth.getSession()?.dj : null;
+      if (typeof DjAuth !== 'undefined' && DjAuth.isExplicitlySignedOut?.() && !cachedBeforeBoot) {
+        finishGuest();
         return;
+      }
+
+      if (typeof DjAuth !== 'undefined' && DjAuth.isExplicitlySignedOut?.() && cachedBeforeBoot) {
+        DjAuth._clearSignedOutFlag();
       }
 
       await this.ready();
@@ -70,34 +96,30 @@ const DjBoot = {
       }
 
       if (authUi?.showBootMessage) {
-        authUi.showBootMessage(onAuthenticated);
+        authUi.showBootMessage(finishAuthenticated);
       }
 
       if (authUi?.checkAfterBoot) {
         await authUi.checkAfterBoot();
       }
 
-      if (typeof DjAuth !== 'undefined') {
-        const cachedDj = DjAuth.getSession()?.dj;
-        if (cachedDj) {
-          onAuthenticated?.();
-          return;
-        }
-
-        try {
-          const supabase = await HideawayAuth.init();
-          const { data } = await supabase.auth.getSession();
-          if (data.session && !DjAuth.isExplicitlySignedOut?.()) {
-            const dj = await DjAuth.resolveSession();
-            if (dj || DjAuth.getSession()?.dj) {
-              onAuthenticated?.();
-              return;
-            }
-          }
-        } catch (_) {}
+      if (typeof DjAuth !== 'undefined' && DjAuth.getSession()?.dj) {
+        finishAuthenticated();
+        return;
       }
 
-      onGuest?.();
+      if (typeof HideawayAuth !== 'undefined' && typeof DjAuth !== 'undefined') {
+        const session = await HideawayAuth.waitForSession(1500);
+        if (session && !DjAuth.isExplicitlySignedOut?.()) {
+          await DjAuth.resolveSession();
+          if (DjAuth.getSession()?.dj) {
+            finishAuthenticated();
+            return;
+          }
+        }
+      }
+
+      finishGuest();
     } finally {
       DjBoot._setAuthPending(false);
     }

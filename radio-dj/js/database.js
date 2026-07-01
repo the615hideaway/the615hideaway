@@ -94,7 +94,10 @@ const RadioDB = {
       }
     }
 
-    const response = await fetch(CONFIG.songsDataUrl, { cache: 'no-store' });
+    const jsonUrl = CONFIG.songsDataUrl.startsWith('/')
+      ? CONFIG.songsDataUrl
+      : `${CONFIG.basePath || ''}/${CONFIG.songsDataUrl}`.replace(/\/+/g, '/');
+    const response = await fetch(jsonUrl, { cache: 'no-store' });
     if (!response.ok) {
       throw new Error(`Could not load catalog from Supabase or ${CONFIG.songsDataUrl}.`);
     }
