@@ -5,6 +5,7 @@
   "scripts": {
     "check:live": "node scripts/check-live.mjs",
     "import:catalog": "node scripts/import-catalog.mjs",
+    "import:catalog:local": "node scripts/import-catalog-local.mjs",
     "vercel:login": "vercel login",
     "vercel:link": "vercel link",
     "vercel:env": "vercel env ls",
@@ -12,6 +13,6 @@
     "deploy": "vercel --prod"
   },
   "devDependencies": {
-    "vercel": "^41.0.0"
+    "vercel": "^54.18.7"
   }
 }
