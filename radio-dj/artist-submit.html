@@ -37,31 +37,41 @@
       <header class="artist-portal-hero">
         <p class="artist-portal-eyebrow">Submit</p>
         <h1 id="page-title">Submit a new song</h1>
-        <p id="page-copy" class="artist-portal-copy">Upload MP3 and cover art via the Google Form. Add WAV files to our shared folder separately.</p>
+        <p id="page-copy" class="artist-portal-copy">Upload MP3 and cover art to Supabase. We review and add approved songs to the catalog.</p>
       </header>
 
       <section class="artist-portal-card">
-        <p class="artist-portal-card-note" id="song-submit-note">After you submit, refresh the DJ catalog — your song should appear right away.</p>
-        <ol class="artist-portal-steps" id="song-submit-steps">
-          <li>Open the submission form and fill in song details.</li>
-          <li>Upload <strong>MP3</strong> and <strong>cover art</strong> on the form.</li>
-          <li>Add <strong>WAV</strong> to our shared folder named <em>Song Title - Artist Name.wav</em> — stations request WAV directly; we don&apos;t host them in DJ downloads.</li>
-          <li>Refresh the catalog after submitting — your song should appear right away.</li>
-        </ol>
-        <a id="song-google-form-open-link" class="btn btn-primary btn-lg btn-full" href="https://forms.gle/zFExL6otU1e7hJF59" target="_blank" rel="noopener">
-          <i class="fa-solid fa-cloud-arrow-up"></i>
-          Open song submission form
-        </a>
-        <p class="field-help">Uploads are free this week. No technical steps on your end.</p>
+        <p class="artist-portal-card-note" id="song-submit-note">Submissions are stored securely and emailed to Radio Now for review.</p>
+        <form id="song-submit-form" class="artist-submit-form">
+          <div class="form-grid">
+            <label>Artist name <input type="text" id="submit-artist-name" required></label>
+            <label>Song title <input type="text" id="submit-song-title" required></label>
+            <label>Music style <input type="text" id="submit-music-style"></label>
+            <label>Year <input type="text" id="submit-year" inputmode="numeric"></label>
+            <label>Contact email <input type="email" id="submit-contact-email"></label>
+            <label>MP3 file <input type="file" id="submit-mp3" accept="audio/mpeg,audio/mp3,.mp3" required></label>
+            <label>Cover art <input type="file" id="submit-cover" accept="image/*" required></label>
+            <label>WAV file (optional) <input type="file" id="submit-wav" accept="audio/wav,.wav"></label>
+          </div>
+          <label class="form-full">Description <textarea id="submit-description" rows="4"></textarea></label>
+          <p id="song-submit-status" class="login-error hidden" role="alert"></p>
+          <button type="submit" class="btn btn-primary btn-lg btn-full" id="song-submit-btn">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            Submit to Radio Now
+          </button>
+        </form>
+        <p class="field-help">Need help? Email <a href="mailto:radio@the615hideaway.com">radio@the615hideaway.com</a>.</p>
       </section>
     </main>
   </div>
 
   <script src="js/config.js"></script>
-  <script src="js/demo.js"></script>  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/demo.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/js/supabase-auth.js"></script>
   <script src="js/dj-boot.js"></script>
   <script src="js/dj-auth.js"></script>
+  <script src="js/artist-boot.js"></script>
   <script src="js/artist-auth.js"></script>
   <script src="js/account-auth.js"></script>
   <script src="js/artist-auth-ui.js"></script>

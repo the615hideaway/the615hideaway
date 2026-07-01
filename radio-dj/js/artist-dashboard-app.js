@@ -580,9 +580,12 @@
   if (isDemoMode) {
     showApp();
   } else {
-    ArtistAuthUI.init({ onAuthenticated: showApp });
+    const authUi = ArtistAuthUI.init({ onAuthenticated: showApp });
     SiteNav.bindLogout(logoutBtn, showLogin);
-    if (ArtistAuth.isAuthenticated()) showApp();
-    else showLogin();
+    ArtistBoot.bootPage({
+      authUi,
+      onAuthenticated: showApp,
+      onGuest: showLogin,
+    });
   }
 })();

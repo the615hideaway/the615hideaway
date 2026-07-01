@@ -94,11 +94,16 @@ const ArtistAuthUI = {
       submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating account…';
 
       try {
-        await ArtistAuth.signupLabel({
+        const result = await ArtistAuth.signupLabel({
           labelName: document.getElementById('signup-label-name')?.value || '',
           email: document.getElementById('label-signup-email')?.value || '',
           password,
         });
+        if (result?.pendingConfirmation) {
+          showError(labelSignupError, `Account created for ${result.email}. Check your inbox for a confirmation email, then sign in.`);
+          switchTab('login');
+          return;
+        }
         labelSignupForm.reset();
         ArtistAuthUI.updateWelcome();
         onAuthenticated();
@@ -128,11 +133,16 @@ const ArtistAuthUI = {
       submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating account…';
 
       try {
-        await ArtistAuth.signup({
+        const result = await ArtistAuth.signup({
           artistName: document.getElementById('signup-artist-name')?.value || '',
           email: document.getElementById('signup-email')?.value || '',
           password,
         });
+        if (result?.pendingConfirmation) {
+          showError(signupError, `Account created for ${result.email}. Check your inbox for a confirmation email, then sign in.`);
+          switchTab('login');
+          return;
+        }
         signupForm.reset();
         ArtistAuthUI.updateWelcome();
         onAuthenticated();
@@ -164,10 +174,16 @@ const ArtistAuthUI = {
   },
 
   bindLogout(button, onLogout) {
-    button?.addEventListener('click', () => {
-      ArtistAuth.logout();
-      ArtistAuthUI.updateWelcome();
-      onLogout();
+    button?.addEventListener('click', async () => {
+      button.disabled = true;
+      try {
+        if (typeof AccountAuth !== 'undefined') await AccountAuth.logout();
+        else ArtistAuth.logout();
+        ArtistAuthUI.updateWelcome();
+        onLogout?.();
+      } finally {
+        button.disabled = false;
+      }
     });
   },
 };

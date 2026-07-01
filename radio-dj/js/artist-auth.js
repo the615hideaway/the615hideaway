@@ -1,95 +1,58 @@
 const ArtistAuth = {
-  isScriptReady() {
-    return !!(CONFIG.googleScriptUrl && CONFIG.googleScriptUrl.includes('script.google.com'));
+  async _getSupabase() {
+    if (typeof HideawayAuth === 'undefined') {
+      throw new Error('Supabase auth is not loaded. Refresh the page and try again.');
+    }
+    return HideawayAuth.init();
   },
 
-  sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+  isExplicitlySignedOut() {
+    return typeof DjAuth !== 'undefined' && DjAuth.isExplicitlySignedOut();
   },
 
-  isRetryableRequestError(err) {
-    const message = String(err?.message || err || '').toLowerCase();
-    return message.includes('timed out')
-      || message.includes('timeout')
-      || message.includes('network')
-      || message.includes('failed to fetch')
-      || message.includes('upload request failed')
-      || message.includes('upload service returned');
-  },
-
-  async request(action, payload = {}, options = {}) {
-    if (!this.isScriptReady()) {
-      throw new Error('Artist sign-in is not configured yet. Redeploy Apps Script with the latest Code.gs.');
-    }
-
-    const label = options.label || action;
-    let response;
-    try {
-      response = await fetch(CONFIG.googleScriptUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action, ...payload }),
-      });
-    } catch (err) {
-      throw new Error(`Upload request failed (${label}). Google timed out or blocked the request — wait a moment and try again.`);
-    }
-
-    if (!response.ok) {
-      throw new Error(`Upload service returned an error (${label}). Please try again.`);
-    }
-
-    let data;
-    try {
-      data = await response.json();
-    } catch (err) {
-      throw new Error(`Upload service sent an invalid response (${label}). Redeploy Apps Script with the latest Code.gs.`);
-    }
-
-    if (!data.success) {
-      throw new Error(data.error || `Request failed (${label}).`);
-    }
-
-    return data;
-  },
-
-  async requestWithRetry(action, payload = {}, options = {}) {
-    const maxAttempts = options.maxAttempts || 4;
-    const label = options.label || action;
-    let lastError;
-
-    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-      try {
-        return await this.request(action, payload, { label });
-      } catch (err) {
-        lastError = err;
-        if (attempt < maxAttempts && this.isRetryableRequestError(err)) {
-          await this.sleep(700 * attempt);
-          continue;
-        }
-        throw err;
-      }
-    }
-
-    throw lastError || new Error(`Request failed (${label}).`);
+  rowToPublic(row, session) {
+    if (!row) return null;
+    const email = session?.user?.email || row.contact_email || '';
+    return {
+      id: row.legacy_artist_id || session?.user?.id || '',
+      artistName: row.artist_name || session?.user?.user_metadata?.display_name || '',
+      email,
+      contactEmail: row.contact_email || email,
+      accountType: row.account_type || 'artist',
+      status: row.status || 'active',
+    };
   },
 
   saveSession(data) {
-    sessionStorage.setItem(CONFIG.artistSessionKey, JSON.stringify({
-      token: data.token,
-      artist: data.artist,
-    }));
+    const payload = JSON.stringify({ artist: data.artist || data });
+    sessionStorage.setItem(CONFIG.artistSessionKey, payload);
+    try {
+      localStorage.setItem(CONFIG.artistSessionKey, payload);
+    } catch (_) {}
     sessionStorage.removeItem(CONFIG.djSessionKey);
+    localStorage.removeItem(CONFIG.djSessionKey);
     sessionStorage.removeItem(CONFIG.authKey);
   },
 
   getSession() {
-    const raw = sessionStorage.getItem(CONFIG.artistSessionKey);
+    let raw = localStorage.getItem(CONFIG.artistSessionKey);
+    if (!raw) raw = sessionStorage.getItem(CONFIG.artistSessionKey);
+    if (raw) {
+      try {
+        sessionStorage.setItem(CONFIG.artistSessionKey, raw);
+      } catch (_) {}
+    }
     if (!raw) return null;
     try {
       return JSON.parse(raw);
-    } catch (err) {
+    } catch (_) {
       return null;
     }
+  },
+
+  clearLocalSession() {
+    sessionStorage.removeItem(CONFIG.artistSessionKey);
+    localStorage.removeItem(CONFIG.artistSessionKey);
   },
 
   getArtist() {
@@ -97,111 +60,192 @@ const ArtistAuth = {
   },
 
   getToken() {
-    return this.getSession()?.token || '';
+    return '';
   },
 
   isAuthenticated() {
-    return !!this.getToken();
-  },
-
-  logout() {
-    sessionStorage.removeItem(CONFIG.artistSessionKey);
-  },
-
-  async login(email, password) {
-    const data = await this.request('artist_login', {
-      email: String(email || '').trim(),
-      password: String(password || ''),
-    });
-    this.saveSession(data);
-    return data.artist;
-  },
-
-  async signup(fields) {
-    const data = await this.request('artist_signup', {
-      artistName: String(fields.artistName || '').trim(),
-      email: String(fields.email || '').trim(),
-      password: String(fields.password || ''),
-    });
-    this.saveSession(data);
-    return data.artist;
-  },
-
-  async signupLabel(fields) {
-    const data = await this.request('label_signup', {
-      labelName: String(fields.labelName || '').trim(),
-      email: String(fields.email || '').trim(),
-      password: String(fields.password || ''),
-    });
-    this.saveSession(data);
-    return data.artist;
+    if (this.isExplicitlySignedOut()) return false;
+    return !!this.getSession()?.artist;
   },
 
   isLabelAccount() {
     return String(this.getArtist()?.accountType || '').toLowerCase() === 'label';
   },
 
-  async createArtistProfile(fields) {
-    return this.authRequest('artist_profile_create', {
-      artistName: String(fields.artistName || '').trim(),
-      claimEmail: String(fields.claimEmail || '').trim(),
+  logout() {
+    this.clearLocalSession();
+  },
+
+  async _getSupabaseSession(supabase) {
+    const { data } = await supabase.auth.getSession();
+    if (data.session) return data.session;
+    try {
+      const refreshed = await supabase.auth.refreshSession();
+      return refreshed.data.session || null;
+    } catch (_) {
+      return null;
+    }
+  },
+
+  async _loadArtistProfile(supabase, userId) {
+    const { data, error } = await supabase
+      .from('artist_profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
+    if (error) throw error;
+    return data;
+  },
+
+  async _ensureMemberProfile(supabase, session, memberType) {
+    const meta = session.user.user_metadata || {};
+    await supabase.from('profiles').upsert({
+      id: session.user.id,
+      email: session.user.email,
+      display_name: meta.display_name || session.user.email.split('@')[0],
+      member_type: memberType,
+      role: memberType === 'label' ? 'artist' : 'artist',
+    }, { onConflict: 'id' });
+  },
+
+  async _activateSession(session) {
+    const supabase = await this._getSupabase();
+    const profileRow = await this._loadArtistProfile(supabase, session.user.id);
+    if (!profileRow || String(profileRow.status).toLowerCase() !== 'active') {
+      throw new Error('Artist account not found or inactive.');
+    }
+
+    const publicArtist = this.rowToPublic(profileRow, session);
+    this.saveSession({ artist: publicArtist });
+    if (typeof DjAuth !== 'undefined' && DjAuth._clearSignedOutFlag) {
+      DjAuth._clearSignedOutFlag();
+    }
+    return publicArtist;
+  },
+
+  async resolveSession() {
+    if (this.isExplicitlySignedOut()) {
+      this.clearLocalSession();
+      return null;
+    }
+
+    const cached = this.getSession();
+    const supabase = await this._getSupabase();
+    const session = await this._getSupabaseSession(supabase);
+
+    if (!session) {
+      return cached?.artist || null;
+    }
+
+    if (cached?.artist) return cached.artist;
+
+    try {
+      return await this._activateSession(session);
+    } catch (err) {
+      console.warn('Artist session resolve failed:', err.message);
+      return cached?.artist || null;
+    }
+  },
+
+  async login(email, password) {
+    const supabase = await this._getSupabase();
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: String(email || '').trim(),
+      password: String(password || ''),
     });
+    if (error) {
+      const msg = String(error.message || '');
+      if (msg.toLowerCase().includes('email not confirmed')) {
+        throw new Error('Please confirm your email first, then sign in.');
+      }
+      throw error;
+    }
+
+    return this._activateSession(data.session);
+  },
+
+  async _signupAccount(fields, accountType) {
+    const email = String(fields.email || '').trim();
+    const password = String(fields.password || '');
+    const displayName = accountType === 'label'
+      ? String(fields.labelName || '').trim()
+      : String(fields.artistName || '').trim();
+
+    if (!displayName || !email) {
+      throw new Error('Name and email are required.');
+    }
+    if (password.length < 8) {
+      throw new Error('Password must be at least 8 characters.');
+    }
+
+    const supabase = await this._getSupabase();
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          display_name: displayName,
+          member_type: accountType,
+          artist_name: displayName,
+        },
+        emailRedirectTo: 'https://www.the615hideaway.com/radio-dj/artist-dashboard.html?confirmed=1',
+      },
+    });
+    if (error) throw error;
+
+    if (!data.session) {
+      return { pendingConfirmation: true, email, artistName: displayName };
+    }
+
+    await this._ensureMemberProfile(supabase, data.session, accountType);
+    const { error: profileError } = await supabase.from('artist_profiles').upsert({
+      id: data.session.user.id,
+      artist_name: displayName,
+      account_type: accountType,
+      contact_email: email,
+      status: 'active',
+    }, { onConflict: 'id' });
+    if (profileError) throw profileError;
+
+    return this._activateSession(data.session);
+  },
+
+  async signup(fields) {
+    const result = await this._signupAccount(fields, 'artist');
+    if (result?.pendingConfirmation) return result;
+    return result;
+  },
+
+  async signupLabel(fields) {
+    const result = await this._signupAccount(fields, 'label');
+    if (result?.pendingConfirmation) return result;
+    return result;
+  },
+
+  async activate(email, password) {
+    return this.login(email, password);
+  },
+
+  async createArtistProfile(fields) {
+    const artistName = String(fields.artistName || '').trim();
+    if (!artistName) throw new Error('Artist name is required.');
+    throw new Error(`To add "${artistName}" to your roster, email radio@the615hideaway.com — artist accounts are created in Supabase.`);
   },
 
   async revokeLabelAccess(labelAccountId) {
-    return this.authRequest('label_access_revoke', {
-      labelAccountId: String(labelAccountId || '').trim(),
-    });
-  },
+    const supabase = await this._getSupabase();
+    const { data: sessionData } = await supabase.auth.getSession();
+    const session = sessionData.session;
+    if (!session) throw new Error('Not signed in.');
 
-  uploadAuthPayload(fields = {}) {
-    const token = this.getToken();
-    if (!token) throw new Error('Not signed in.');
-    return { token, ...fields };
-  },
+    const { error } = await supabase
+      .from('label_roster_access')
+      .update({ status: 'revoked' })
+      .eq('label_user_id', session.user.id)
+      .eq('artist_profile_id', String(labelAccountId || '').trim());
 
-  async uploadSubmissionAsset(fields) {
-    const fileName = String(fields.fileName || '').trim() || 'file';
-    return this.requestWithRetry('song_upload_asset', this.uploadAuthPayload({
-      artistName: String(fields.artistName || '').trim(),
-      songTitle: String(fields.songTitle || '').trim(),
-      assetType: String(fields.assetType || '').trim(),
-      fileName,
-      mimeType: String(fields.mimeType || '').trim(),
-      fileBase64: String(fields.fileBase64 || ''),
-    }), { label: `${fileName} upload` });
-  },
-
-  async uploadSubmissionAssetStart(fields) {
-    const fileName = String(fields.fileName || '').trim() || 'file';
-    return this.requestWithRetry('song_upload_start', this.uploadAuthPayload({
-      uploadId: String(fields.uploadId || '').trim(),
-      artistName: String(fields.artistName || '').trim(),
-      songTitle: String(fields.songTitle || '').trim(),
-      assetType: String(fields.assetType || '').trim(),
-      fileName,
-      mimeType: String(fields.mimeType || '').trim(),
-      totalChunks: fields.totalChunks,
-    }), { label: `${fileName} start` });
-  },
-
-  async uploadSubmissionAssetChunk(fields) {
-    const fileName = String(fields.fileName || '').trim() || 'file';
-    const part = Number(fields.chunkIndex || 0) + 1;
-    const total = Number(fields.totalChunks || 0);
-    return this.requestWithRetry('song_upload_chunk', this.uploadAuthPayload({
-      uploadId: String(fields.uploadId || '').trim(),
-      chunkIndex: fields.chunkIndex,
-      totalChunks: fields.totalChunks,
-      chunkBase64: String(fields.chunkBase64 || ''),
-    }), { label: `${fileName} part ${part} of ${total}` });
-  },
-
-  async uploadSubmissionAssetFinish(fields) {
-    const fileName = String(fields.fileName || '').trim() || 'file';
-    return this.requestWithRetry('song_upload_finish', this.uploadAuthPayload({
-      uploadId: String(fields.uploadId || '').trim(),
-    }), { label: `${fileName} finalize`, maxAttempts: 3 });
+    if (error) throw error;
+    return { success: true };
   },
 
   buildSongPayload(fields) {
@@ -213,52 +257,130 @@ const ArtistAuth = {
       musicStyle: String(fields.musicStyle || '').trim(),
       songwriter: String(fields.songwriter || '').trim(),
       featuredArtist: String(fields.featuredArtist || '').trim(),
-      leadVocals: String(fields.leadVocals || '').trim(),
-      harmonyVocals: Array.isArray(fields.harmonyVocals) ? fields.harmonyVocals : [],
-      instrumentPlayers: Array.isArray(fields.instrumentPlayers) ? fields.instrumentPlayers : [],
       recordLabel: String(fields.recordLabel || '').trim(),
-      independent: !!fields.independent,
       releaseType: String(fields.releaseType || 'single').trim(),
       albumName: String(fields.albumName || '').trim(),
       description: String(fields.description || '').trim(),
       website: String(fields.website || '').trim(),
       contactEmail: String(fields.contactEmail || '').trim(),
-      mp3Link: String(fields.mp3Link || '').trim(),
-      wavLink: String(fields.wavLink || '').trim(),
-      coverLink: String(fields.coverLink || '').trim(),
     };
   },
 
+  async _uploadFile(file, assetType, meta) {
+    const supabase = await this._getSupabase();
+    const { data: sessionData } = await supabase.auth.getSession();
+    const session = sessionData.session;
+    if (!session) throw new Error('Not signed in.');
+
+    const safeName = String(file.name || assetType).replace(/[^a-zA-Z0-9._-]+/g, '_');
+    const path = `${session.user.id}/${Date.now()}-${assetType}-${safeName}`;
+
+    const { error } = await supabase.storage
+      .from('radio-submissions')
+      .upload(path, file, { upsert: false, contentType: file.type || undefined });
+
+    if (error) throw error;
+
+    const { data: urlData } = supabase.storage.from('radio-submissions').getPublicUrl(path);
+    return urlData?.publicUrl || path;
+  },
+
+  async uploadSubmissionAsset(fields) {
+    throw new Error('Use submitSong with file fields — uploads go to Supabase Storage.');
+  },
+
+  async uploadSubmissionAssetStart() {
+    throw new Error('Chunked uploads are no longer used. Submit files with submitSong.');
+  },
+
+  async uploadSubmissionAssetChunk() {
+    throw new Error('Chunked uploads are no longer used.');
+  },
+
+  async uploadSubmissionAssetFinish() {
+    throw new Error('Chunked uploads are no longer used.');
+  },
+
   async submitSong(fields) {
-    return this.authRequest('song_submit', this.buildSongPayload(fields));
+    const supabase = await this._getSupabase();
+    const { data: sessionData } = await supabase.auth.getSession();
+    const session = sessionData.session;
+    if (!session) throw new Error('Not signed in.');
+
+    const artist = this.getArtist();
+    const payload = this.buildSongPayload(fields);
+    if (!payload.artistName || !payload.songTitle) {
+      throw new Error('Artist name and song title are required.');
+    }
+
+    let mp3Url = String(fields.mp3Link || '').trim();
+    let coverUrl = String(fields.coverLink || '').trim();
+    let wavUrl = String(fields.wavLink || '').trim();
+
+    if (fields.mp3File instanceof File) mp3Url = await this._uploadFile(fields.mp3File, 'mp3', payload);
+    if (fields.coverFile instanceof File) coverUrl = await this._uploadFile(fields.coverFile, 'cover', payload);
+    if (fields.wavFile instanceof File) wavUrl = await this._uploadFile(fields.wavFile, 'wav', payload);
+
+    const { data, error } = await supabase.from('song_submissions').insert({
+      artist_user_id: session.user.id,
+      artist_name: payload.artistName || artist?.artistName || '',
+      song_title: payload.songTitle,
+      status: 'pending',
+      payload,
+      mp3_url: mp3Url,
+      wav_url: wavUrl,
+      cover_url: coverUrl,
+    }).select('id').single();
+
+    if (error) throw error;
+
+    try {
+      await fetch('/api/radio-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + session.access_token,
+        },
+        body: JSON.stringify({
+          type: 'song_submission',
+          submissionId: data.id,
+          ...payload,
+          mp3Url,
+          coverUrl,
+          wavUrl,
+          submitterEmail: artist?.email || session.user.email,
+        }),
+      });
+    } catch (_) {}
+
+    return { success: true, submissionId: data.id };
   },
 
   async updateSong(submissionId, fields) {
-    return this.authRequest('song_update', {
-      submissionId: String(submissionId || '').trim(),
-      ...this.buildSongPayload(fields),
-    });
-  },
+    const supabase = await this._getSupabase();
+    const { data: sessionData } = await supabase.auth.getSession();
+    const session = sessionData.session;
+    if (!session) throw new Error('Not signed in.');
 
-  async activate(email, password) {
-    const data = await this.request('artist_activate', {
-      email: String(email || '').trim(),
-      password: String(password || ''),
-    });
-    this.saveSession(data);
-    return data.artist;
+    const payload = this.buildSongPayload(fields);
+    const { error } = await supabase
+      .from('song_submissions')
+      .update({ payload, artist_name: payload.artistName, song_title: payload.songTitle })
+      .eq('id', String(submissionId || '').trim())
+      .eq('artist_user_id', session.user.id);
+
+    if (error) throw error;
+    return { success: true };
   },
 
   async authRequest(action, payload = {}) {
-    const token = this.getToken();
-    if (!token) throw new Error('Not signed in.');
-    return this.request(action, { token, ...payload });
+    throw new Error(`"${action}" is no longer served by Google Sheets. This action uses Supabase now.`);
   },
 
   updateArtistProfile(artist) {
     const session = this.getSession();
     if (!session) return;
     session.artist = { ...session.artist, ...artist };
-    sessionStorage.setItem(CONFIG.artistSessionKey, JSON.stringify(session));
+    this.saveSession(session);
   },
 };

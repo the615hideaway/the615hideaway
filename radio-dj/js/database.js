@@ -5,13 +5,8 @@ const RadioDB = {
   catalogSessionKey: 'radio_now_catalog_cache',
   catalogSessionTtlMs: 2 * 60 * 1000,
 
-  isScriptConfigured() {
-    return !!(CONFIG.googleScriptUrl && CONFIG.googleScriptUrl.includes('script.google.com'));
-  },
-
   zipSetupHint() {
-    if (this.isScriptConfigured()) return '';
-    return ' ZIP downloads need a one-time Apps Script setup: open your Radio Now Google Sheet → Extensions → Apps Script → paste google-apps-script/Code.gs → Deploy as Web app (Anyone) → paste the /exec URL into js/config.js as googleScriptUrl. See AUDIO-FIX-STEPS.txt in the repo.';
+    return '';
   },
 
   normalizeSong(raw, index) {
@@ -96,15 +91,6 @@ const RadioDB = {
         if ((live.songs || []).length) return live;
       } catch (err) {
         console.warn('Supabase catalog failed, using songs.json fallback:', err);
-      }
-    }
-
-    if (CONFIG.catalogLiveFromSheet && typeof SheetCatalog !== 'undefined') {
-      try {
-        const live = await SheetCatalog.fetchCatalogPayload();
-        if ((live.songs || []).length) return live;
-      } catch (err) {
-        console.warn('Live sheet catalog failed, using songs.json fallback:', err);
       }
     }
 
@@ -261,40 +247,6 @@ const RadioDB = {
     };
   },
 
-  async fetchCoverViaScript(driveId) {
-    const url = Utils.scriptCoverUrl(driveId);
-    if (!url) return null;
-
-    const response = await fetch(url, { cache: 'no-store' });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-    const data = await response.json();
-    if (!data.success || !data.dataBase64) {
-      throw new Error(data.error || 'Cover proxy failed');
-    }
-
-    const blob = this.base64ToBlob(data.dataBase64, data.mimeType || 'image/jpeg');
-    if (!(await Utils.isImageBlob(blob))) throw new Error('not an image');
-    return blob;
-  },
-
-  async fetchAudioViaScript(driveId) {
-    const url = Utils.scriptStreamUrl(driveId);
-    if (!url) throw new Error('Stream proxy not configured');
-
-    const response = await fetch(url, { cache: 'no-store' });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-    const data = await response.json();
-    if (!data.success || !data.dataBase64) {
-      throw new Error(data.error || 'Audio stream failed');
-    }
-
-    const blob = this.base64ToBlob(data.dataBase64, data.mimeType || 'application/octet-stream');
-    if (!blob.size) throw new Error('Empty file');
-    return blob;
-  },
-
   async fetchCoverBlob(song) {
     const driveId = Utils.getCoverDriveId(song);
     const errors = [];
@@ -308,15 +260,6 @@ const RadioDB = {
         throw new Error('not an image');
       } catch (err) {
         errors.push(`local: ${err.message}`);
-      }
-    }
-
-    if (driveId && this.isScriptConfigured()) {
-      try {
-        const blob = await this.fetchCoverViaScript(driveId);
-        if (blob) return blob;
-      } catch (err) {
-        errors.push(`script: ${err.message}`);
       }
     }
 
@@ -400,48 +343,7 @@ const RadioDB = {
     return new Blob([buffer], { type: mimeType || 'application/octet-stream' });
   },
 
-  async downloadZipViaScript(songs, format, onProgress) {
-    onProgress?.({ current: 0, total: songs.length, added: 0, status: 'requesting' });
-
-    const response = await fetch(CONFIG.googleScriptUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        action: 'zip',
-        format,
-        songs: songs.map((s) => this.songPayloadForZip(s, format)),
-      }),
-    });
-
-    const raw = await response.text();
-    let data;
-    try {
-      data = JSON.parse(raw);
-    } catch {
-      throw new Error(`Server ZIP failed (HTTP ${response.status}). Large files are built in your browser instead.`);
-    }
-
-    if (!data.success) throw new Error(data.error || 'Zip creation failed');
-
-    let blob = this.base64ToBlob(data.zipBase64, 'application/zip');
-    blob = await this.upgradeZipOneSheetsToPdf(blob, songs, onProgress);
-    this.triggerBlobDownload(blob, data.filename || 'radio-now-selection.zip');
-
-    onProgress?.({ current: songs.length, total: songs.length, added: data.added || songs.length, status: 'done' });
-
-    if (data.skipped?.length) {
-      throw new Error(`ZIP created with ${data.added || '?'} of ${songs.length} songs. Skipped: ${data.skipped.join('; ')}`);
-    }
-  },
-
   async fetchAudioBlob(url) {
-    if (Utils.isScriptStreamUrl(url)) {
-      const driveId = Utils.extractDriveId(url) || new URL(url).searchParams.get('id');
-      if (driveId && this.isScriptConfigured()) {
-        return this.fetchAudioViaScript(driveId);
-      }
-    }
-
     const response = await fetch(url, { mode: 'cors', redirect: 'follow', credentials: 'omit' });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
@@ -467,21 +369,10 @@ const RadioDB = {
     const driveId = Utils.getSongDriveId(song, format);
     const errors = [];
 
-    if (driveId && this.isScriptConfigured()) {
-      try {
-        const blob = await this.fetchAudioViaScript(driveId);
-        if (await Utils.isAudioBlob(blob)) return blob;
-        errors.push(`script: not audio (${blob.type || 'unknown'})`);
-      } catch (err) {
-        errors.push(`script: ${err.message}`);
-      }
-    }
-
     const candidates = Utils.getSongDownloadCandidates(song, format);
-    if (!candidates.length && !errors.length) throw new Error(`No ${format.toUpperCase()} link`);
+    if (!candidates.length) throw new Error(`No ${format.toUpperCase()} link`);
 
     for (const url of candidates) {
-      if (Utils.isScriptStreamUrl(url)) continue;
       try {
         const blob = await this.fetchAudioBlob(url);
         if (await Utils.isAudioBlob(blob)) return blob;

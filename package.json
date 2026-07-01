@@ -1,0 +1,12 @@
+{
+  "name": "the615hideaway",
+  "private": true,
+  "description": "The 615 Hideaway — Supabase + Vercel + Resend",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "devDependencies": {
+    "vercel": "^41.0.0"
+  }
+}

@@ -52,11 +52,16 @@ const ArtistPortalAuth = {
       window.location.replace(this.loginUrl);
     });
 
-    if (ArtistAuth.isAuthenticated()) {
-      boot();
-      return;
-    }
-
-    this.requireAuth();
+    (async () => {
+      if (typeof HideawayAuth !== 'undefined') await HideawayAuth.init();
+      if (typeof ArtistAuth !== 'undefined' && ArtistAuth.resolveSession) {
+        await ArtistAuth.resolveSession();
+      }
+      if (ArtistAuth.isAuthenticated()) {
+        boot();
+        return;
+      }
+      this.requireAuth();
+    })();
   },
 };

@@ -135,6 +135,35 @@ module.exports = async (req, res) => {
     return;
   }
 
+  if (type === 'song_submission') {
+    const artistName = String(body.artistName || body.artist_name || '').trim();
+    const songTitle = String(body.songTitle || body.song_title || '').trim();
+    const subject = `New song submission — ${songTitle} — ${artistName}`;
+
+    const html = emailShell('New Radio Now song submission', [
+      line('Submission ID', body.submissionId || '—'),
+      line('Artist', artistName),
+      line('Song', songTitle),
+      line('Style', body.musicStyle || '—'),
+      line('Submitter', body.submitterEmail || '—'),
+      body.mp3Url ? line('MP3', body.mp3Url) : '',
+      body.coverUrl ? line('Cover', body.coverUrl) : '',
+      body.wavUrl ? line('WAV', body.wavUrl) : '',
+      body.description ? line('Notes', body.description) : '',
+    ].filter(Boolean));
+
+    await sendResend(resendKey, {
+      from: `Radio Now <${fromEmail}>`,
+      to: [adminEmail],
+      reply_to: normalizeEmail(body.submitterEmail) || undefined,
+      subject,
+      html,
+    });
+
+    res.status(200).json({ success: true });
+    return;
+  }
+
   res.status(400).json({ error: 'Unknown email type.' });
 };
 

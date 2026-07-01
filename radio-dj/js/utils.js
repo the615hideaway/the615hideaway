@@ -92,44 +92,6 @@ const Utils = {
     return `Radio Now - ${songs.length} Songs.zip`;
   },
 
-  scriptStreamUrl(driveId) {
-    const id = String(driveId || '').trim();
-    const scriptUrl = String(CONFIG.googleScriptUrl || '').trim();
-    if (!id || !scriptUrl.includes('script.google.com')) return '';
-    return `${scriptUrl.replace(/\/$/, '')}?action=stream&id=${encodeURIComponent(id)}`;
-  },
-
-  scriptMediaUrl(driveId) {
-    const id = String(driveId || '').trim();
-    const scriptUrl = String(CONFIG.googleScriptUrl || '').trim();
-    if (!id || !scriptUrl.includes('script.google.com')) return '';
-    return `${scriptUrl.replace(/\/$/, '')}?action=media&id=${encodeURIComponent(id)}`;
-  },
-
-  isScriptStreamUrl(url) {
-    const value = String(url || '');
-    return value.includes('script.google.com') && value.includes('action=stream');
-  },
-
-  isScriptMediaUrl(url) {
-    const value = String(url || '');
-    return value.includes('script.google.com') && value.includes('action=media');
-  },
-
-  driveApiMediaUrl(driveId) {
-    const id = String(driveId || '').trim();
-    const apiKey = String(CONFIG.googleApiKey || '').trim();
-    if (!id || !apiKey) return '';
-    return `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(id)}?alt=media&key=${encodeURIComponent(apiKey)}`;
-  },
-
-  scriptCoverUrl(driveId) {
-    const id = String(driveId || '').trim();
-    const scriptUrl = String(CONFIG.googleScriptUrl || '').trim();
-    if (!id || !scriptUrl.includes('script.google.com')) return '';
-    return `${scriptUrl.replace(/\/$/, '')}?action=cover&id=${encodeURIComponent(id)}`;
-  },
-
   getCoverDriveId(song) {
     return song.coverDriveId || this.extractDriveId(song.cover || '') || '';
   },
@@ -141,8 +103,6 @@ const Utils = {
     if (song.coverLocal) urls.push(song.coverLocal);
 
     if (driveId) {
-      const api = this.driveApiMediaUrl(driveId);
-      if (api) urls.push(api);
       urls.push(`https://drive.google.com/thumbnail?id=${driveId}&sz=w800`);
       urls.push(...this.getDriveDownloadUrls(driveId));
     }
@@ -197,10 +157,6 @@ const Utils = {
     const driveId = this.getSongDriveId(song, format);
 
     if (driveId) {
-      const stream = this.scriptStreamUrl(driveId);
-      const api = this.driveApiMediaUrl(driveId);
-      if (stream) urls.push(stream);
-      if (api) urls.push(api);
       urls.push(...this.getDriveDownloadUrls(driveId));
     }
 

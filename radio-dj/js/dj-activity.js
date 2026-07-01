@@ -113,16 +113,40 @@ const DjActivity = {
   },
 
   async fetchDemoDashboard() {
-    const scriptUrl = String(CONFIG.googleScriptUrl || '').trim();
-    if (!scriptUrl.includes('script.google.com')) {
-      throw new Error('Demo dashboard needs Apps Script setup.');
-    }
+    const supabase = await HideawayAuth.init();
+    const { data: rows, error } = await supabase
+      .from('dj_activity')
+      .select('id, dj_user_id, event_type, song_id, song_title, artist_name, music_style, format, created_at')
+      .order('created_at', { ascending: false })
+      .limit(250);
 
-    const url = `${scriptUrl.replace(/\/$/, '')}?action=demo_dashboard`;
-    const response = await fetch(url, { cache: 'no-store' });
-    const data = await response.json();
-    if (!data.success) throw new Error(data.error || 'Demo dashboard unavailable');
-    return data;
+    if (error) throw error;
+
+    const demoName = CONFIG.spotlight?.spotlightAdminDjs?.[0] || 'Sammy Passamano';
+    const activity = (rows || []).map((row) => ({
+      id: row.id,
+      timestamp: row.created_at,
+      eventType: row.event_type,
+      songId: row.song_id,
+      songTitle: row.song_title,
+      artistName: row.artist_name,
+      musicStyle: row.music_style,
+      format: row.format,
+    }));
+
+    return {
+      success: true,
+      dj: {
+        name: demoName,
+        firstName: demoName.split(' ')[0] || demoName,
+        lastName: demoName.split(' ').slice(1).join(' ') || '',
+        programName: 'Radio Now',
+        stationCallLetters: 'Demo',
+        shareEmail: false,
+      },
+      stats: this.computeStats(activity),
+      activity,
+    };
   },
 
   async updateProfile(fields) {
