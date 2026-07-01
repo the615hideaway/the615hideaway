@@ -124,8 +124,60 @@ const DjAuth = {
       email: session.user.email,
       display_name: meta.display_name || session.user.email.split('@')[0],
       member_type: memberType || meta.member_type || 'dj',
-      role: memberType === 'dj' ? 'dj' : 'member'
+      role: (memberType || meta.member_type) === 'dj' ? 'dj' : 'member'
     }, { onConflict: 'id' });
+  },
+
+  _metadataToProfileRow(meta, session) {
+    const pending = meta?.dj_profile;
+    if (!pending || typeof pending !== 'object') return null;
+
+    return this.profileToRow({
+      firstName: pending.first_name || pending.firstName || '',
+      lastName: pending.last_name || pending.lastName || '',
+      programName: pending.program_name || pending.programName || '',
+      programFormat: pending.program_format || pending.programFormat || '',
+      stationCallLetters: pending.station_call_letters || pending.stationCallLetters || '',
+      stationFrequency: pending.station_frequency || pending.stationFrequency || '',
+      state: pending.state || '',
+      stationWebsite: pending.station_website || pending.stationWebsite || '',
+      programWebsite: pending.program_website || pending.programWebsite || '',
+      programStartTime: pending.program_start_time || pending.programStartTime || '',
+      programEndTime: pending.program_end_time || pending.programEndTime || '',
+      programTimezone: pending.program_timezone || pending.programTimezone || '',
+      programDays: pending.program_days || pending.programDays || '',
+      contactEmail: pending.contact_email || pending.contactEmail || session?.user?.email || '',
+      shareEmail: !!(pending.share_email ?? pending.shareEmail)
+    });
+  },
+
+  async _ensureDjProfileFromMetadata(supabase, session) {
+    let profileRow = await this._loadDjProfile(supabase, session.user.id);
+    if (profileRow?.profile_complete) return profileRow;
+
+    const row = this._metadataToProfileRow(session.user.user_metadata || {}, session);
+    if (!row) return profileRow;
+
+    const { error } = await supabase.from('dj_profiles').upsert({
+      id: session.user.id,
+      ...row
+    }, { onConflict: 'id' });
+    if (error) throw error;
+
+    return this._loadDjProfile(supabase, session.user.id);
+  },
+
+  async completeSessionSetup(session) {
+    const supabase = await this._getSupabase();
+    await this._ensureMemberProfile(supabase, session, 'dj');
+
+    const profileRow = await this._ensureDjProfileFromMetadata(supabase, session);
+    if (!profileRow?.profile_complete) {
+      throw new Error('DJ profile is incomplete. Use the sign-up tab or contact support.');
+    }
+
+    const payload = session.user.user_metadata?.dj_profile || profileRow;
+    return this._activateSession(session, profileRow, payload);
   },
 
   async _loadDjProfile(supabase, userId) {
@@ -206,10 +258,7 @@ const DjAuth = {
         const session = data.session;
         if (!session) return null;
 
-        const profileRow = await this._loadDjProfile(supabase, session.user.id);
-        if (!profileRow || !profileRow.profile_complete) return null;
-
-        return await this._activateSession(session, profileRow);
+        return await this.completeSessionSetup(session);
       } catch (err) {
         console.warn('DJ session restore failed:', err.message);
         return null;
@@ -227,17 +276,15 @@ const DjAuth = {
       email: String(email || '').trim(),
       password: String(password || '')
     });
-    if (error) throw error;
-
-    const session = data.session;
-    await this._ensureMemberProfile(supabase, session, 'dj');
-
-    const profileRow = await this._loadDjProfile(supabase, session.user.id);
-    if (!profileRow || !profileRow.profile_complete) {
-      throw new Error('Finish your DJ profile on the sign-up tab, or create a new DJ account with the same email.');
+    if (error) {
+      const msg = String(error.message || '');
+      if (msg.toLowerCase().includes('email not confirmed')) {
+        throw new Error('Please confirm your email first. Check your inbox and spam for a message from The 615 Hideaway, click the link, then sign in.');
+      }
+      throw error;
     }
 
-    return this._activateSession(session, profileRow);
+    return this.completeSessionSetup(data.session);
   },
 
   async signup(fields) {
@@ -255,38 +302,49 @@ const DjAuth = {
     const supabase = await this._getSupabase();
     const displayName = [payload.firstName, payload.lastName].filter(Boolean).join(' ');
 
+    const row = this.profileToRow({
+      ...payload,
+      contactEmail: payload.contactEmail || email
+    });
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
           display_name: displayName,
-          member_type: 'dj'
+          member_type: 'dj',
+          dj_profile: {
+            first_name: row.first_name,
+            last_name: row.last_name,
+            program_name: row.program_name,
+            program_format: row.program_format,
+            station_call_letters: row.station_call_letters,
+            station_frequency: row.station_frequency,
+            state: row.state,
+            station_website: row.station_website,
+            program_website: row.program_website,
+            program_start_time: row.program_start_time,
+            program_end_time: row.program_end_time,
+            program_timezone: row.program_timezone,
+            program_days: row.program_days,
+            contact_email: row.contact_email,
+            share_email: row.share_email
+          }
         },
-        emailRedirectTo: 'https://www.the615hideaway.com/radio-dj'
+        emailRedirectTo: 'https://www.the615hideaway.com/radio-dj?confirmed=1'
       }
     });
     if (error) throw error;
 
     if (!data.session) {
-      throw new Error('Account created. Check your email to confirm, then sign in here with the same email and password.');
+      return {
+        pendingConfirmation: true,
+        email
+      };
     }
 
-    const session = data.session;
-    await this._ensureMemberProfile(supabase, session, 'dj');
-
-    const row = this.profileToRow({
-      ...payload,
-      contactEmail: payload.contactEmail || email
-    });
-
-    const { error: profileError } = await supabase.from('dj_profiles').upsert({
-      id: session.user.id,
-      ...row
-    }, { onConflict: 'id' });
-    if (profileError) throw profileError;
-
-    return this._activateSession(session, { ...row, id: session.user.id }, payload);
+    return this.completeSessionSetup(data.session);
   },
 
   async authRequest(action, payload = {}) {

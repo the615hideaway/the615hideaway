@@ -908,9 +908,10 @@
   if (isDemoMode) {
     showApp();
   } else {
-    DjAuthUI.init({ onAuthenticated: showApp });
+    const authUi = DjAuthUI.init({ onAuthenticated: showApp });
     SiteNav.bindLogout(logoutBtn, showLogin);
     DjBoot.ready().then(() => {
+      authUi.showBootMessage(showApp);
       if (DjAuth.isAuthenticated()) showApp();
       else showLogin();
     });

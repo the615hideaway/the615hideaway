@@ -1,0 +1,103 @@
+SUPABASE CONFIRMATION EMAIL — ZOHO SMTP SETUP
+==============================================
+
+DJs must confirm email before first sign-in. These steps connect your Zoho
+mailbox so confirmation emails send from The 615 Hideaway (not Supabase default).
+
+RECOMMENDED SENDER
+------------------
+sammy@the615hideaway.com  (main Zoho mailbox)
+
+You can set the display name to "The 615 Hideaway" or "Radio Now" in the template.
+
+
+STEP 1 — Zoho app password (5 min)
+----------------------------------
+1. Sign in at https://mail.zoho.com as sammy@the615hideaway.com
+2. Go to Zoho Account / Security → App Passwords
+   (or https://accounts.zoho.com/home#security/app-passwords)
+3. Generate a new app password — name it "Supabase Auth"
+4. Copy the password (you will not see it again)
+
+
+STEP 2 — Supabase: turn ON confirm email
+----------------------------------------
+1. https://supabase.com/dashboard → your the615hideaway project
+2. Authentication → Providers → Email
+3. Turn ON "Confirm email"
+4. Save
+
+
+STEP 3 — Supabase: URL configuration
+------------------------------------
+Authentication → URL Configuration
+
+Site URL:
+  https://www.the615hideaway.com
+
+Redirect URLs (add all):
+  https://www.the615hideaway.com/**
+  https://the615hideaway.com/**
+  https://the615hideaway.vercel.app/**
+
+DJ confirm link lands on:
+  https://www.the615hideaway.com/radio-dj?confirmed=1
+
+
+STEP 4 — Supabase: custom SMTP (Zoho)
+-------------------------------------
+Authentication → Emails → SMTP Settings → Enable Custom SMTP
+
+  Host:       smtp.zoho.com
+  Port:       465
+  Username:   sammy@the615hideaway.com
+  Password:   (Zoho app password from Step 1)
+  Sender email:   sammy@the615hideaway.com
+  Sender name:    The 615 Hideaway
+
+Use SSL/TLS on port 465 (or try 587 with STARTTLS if 465 fails).
+
+Click Save, then Send test email to your own address.
+
+
+STEP 5 — Customize the confirm email (optional but recommended)
+---------------------------------------------------------------
+Authentication → Email Templates → Confirm signup
+
+Subject example:
+  Confirm your Radio Now DJ account
+
+Body — keep the {{ .ConfirmationURL }} link. Example opening line:
+  Thanks for signing up for Radio Now at The 615 Hideaway. Tap below to
+  confirm your email and open the DJ catalog.
+
+
+STEP 6 — Test the full DJ flow
+------------------------------
+1. Use a real inbox you can check (or the615hideaway@gmail.com)
+2. https://www.the615hideaway.com/radio-dj?tab=signup
+3. Complete DJ sign-up form → green success message (check your email)
+4. Open confirmation email → click link
+5. Should land on /radio-dj and open the catalog (or sign-in with password)
+6. Supabase → Authentication → Users → email confirmed = yes
+7. Table Editor → dj_profiles → row for that user
+
+
+TROUBLESHOOTING
+---------------
+No email arrived
+  → Check spam. Confirm SMTP test passed in Supabase.
+  → Zoho must use app password, not regular login password.
+
+"Email not confirmed" on sign-in
+  → User has not clicked the link yet. Resend: Authentication → Users → user → Send confirmation.
+
+Link opens but catalog does not load
+  → Hard refresh. Confirm redirect URLs include www.the615hideaway.com/**
+
+Emails from noreply@mail.app.supabase.io
+  → Custom SMTP is not saved or not enabled — redo Step 4.
+
+Using radio@ or info@ as sender
+  → In Zoho, aliases can receive mail; SMTP send usually uses the primary mailbox.
+  → Start with sammy@; switch sender later if Zoho alias send is configured.

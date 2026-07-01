@@ -2789,6 +2789,25 @@ body.demo-mode .detail-downloads .download-onesheet-btn {
 
 .login-error.show { display: block; }
 
+.login-notice {
+  display: none;
+  margin-bottom: 0.75rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 8px;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  color: #f3e7c3;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.login-notice[hidden],
+.login-notice:empty {
+  display: none !important;
+}
+
+.login-notice.show { display: block; }
+
 .dj-signup-option {
   margin-top: 0.35rem;
   padding: 0.9rem 1rem 1rem;

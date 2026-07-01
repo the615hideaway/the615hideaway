@@ -158,7 +158,7 @@
         return;
       }
 
-      showMessage('Account created! Check your email to confirm, then sign in.', 'success');
+      showMessage('Account created for ' + email + '. Check your inbox and spam for a confirmation email from The 615 Hideaway, then sign in.', 'success');
       document.querySelector('[data-auth-tab="signin"]').click();
     } catch (err) {
       showMessage(err.message || 'Could not create account. Please try again.', 'error');
@@ -175,7 +175,13 @@
     try {
       const supabase = await HideawayAuth.init();
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      if (error) {
+        const msg = String(error.message || '');
+        if (msg.toLowerCase().includes('email not confirmed')) {
+          throw new Error('Please confirm your email first. Check your inbox and spam for a message from The 615 Hideaway.');
+        }
+        throw error;
+      }
 
       const profile = await HideawayAuth.getProfile();
       redirectAfterAuth(profile?.member_type || 'fan');

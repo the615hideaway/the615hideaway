@@ -37,10 +37,13 @@ STEP 3 — Auth settings
 
 4. Authentication → Providers → Email
    - Keep Email enabled
-   - For fastest launch: turn OFF "Confirm email" (optional — turn back on later)
-   - Or leave confirm ON and users verify email before first sign-in
+   - Turn ON "Confirm email" (required for DJ accounts)
 
-STEP 4 — Add keys to Vercel
+5. Email delivery — see SUPABASE-EMAIL-SETUP.txt
+   - Connect Zoho SMTP (sammy@the615hideaway.com) so confirmations send from your domain
+   - Send a test email from Supabase after saving SMTP
+
+STEP 4 — Add keys to Vercel (unchanged)
 ---------------------------
 1. Supabase → Project Settings → API
 2. Copy:

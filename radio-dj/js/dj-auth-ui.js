@@ -27,19 +27,40 @@ const DjAuthUI = {
       return el;
     };
 
-    const showError = (el, message) => {
+    const ensureSignupNotice = () => {
+      let el = document.getElementById('signup-notice');
+      if (el || !signupForm) return el;
+
+      el = document.createElement('div');
+      el.id = 'signup-notice';
+      el.className = 'login-notice';
+      el.hidden = true;
+
+      const submitBtn = signupForm.querySelector('button[type="submit"]');
+      if (submitBtn) signupForm.insertBefore(el, submitBtn);
+      else signupForm.appendChild(el);
+
+      return el;
+    };
+
+    const showAlert = (el, message, type) => {
       if (!el || !message) return;
       el.textContent = message;
       el.hidden = false;
-      el.classList.add('show');
+      el.classList.remove('login-error', 'login-notice');
+      el.classList.add(type === 'success' ? 'login-notice' : 'login-error', 'show');
     };
 
+    const showError = (el, message) => showAlert(el, message, 'error');
+
+    const showSuccess = (el, message) => showAlert(el, message, 'success');
+
     const clearErrors = () => {
-      [loginError, document.getElementById('signup-error')].forEach((el) => {
+      [loginError, document.getElementById('signup-error'), document.getElementById('signup-notice')].forEach((el) => {
         if (!el) return;
         el.textContent = '';
         el.hidden = true;
-        el.classList.remove('show');
+        el.classList.remove('show', 'login-error', 'login-notice');
       });
     };
 
@@ -124,7 +145,18 @@ const DjAuthUI = {
             password: document.getElementById('signup-password')?.value || '',
             shareEmail: !!document.getElementById('signup-share-email')?.checked,
           };
-        await DjAuth.signup(fields);
+        const result = await DjAuth.signup(fields);
+        if (result?.pendingConfirmation) {
+          signupForm.reset();
+          showSuccess(
+            ensureSignupNotice(),
+            'Account created for ' + result.email + '. Check your inbox (and spam) for a confirmation email from The 615 Hideaway. Click the link, then sign in below with the same password.'
+          );
+          switchTab('login');
+          const loginEmail = document.getElementById('login-email');
+          if (loginEmail) loginEmail.value = result.email;
+          return;
+        }
         signupForm.reset();
         DjAuthUI.updateWelcome();
         onAuthenticated();
@@ -136,7 +168,38 @@ const DjAuthUI = {
       }
     });
 
-    return { switchTab, clearErrors };
+    return { switchTab, clearErrors, showBootMessage };
+  },
+
+  showBootMessage(onAuthenticated) {
+    const gate = document.getElementById('login-gate');
+    if (!gate) return;
+
+    const loginError = document.getElementById('login-error');
+    const bootMessage = typeof DjBoot !== 'undefined' ? DjBoot.consumeMessage() : '';
+    if (!bootMessage) return;
+
+    const isSuccess = bootMessage.toLowerCase().includes('confirmed') || bootMessage.toLowerCase().includes('welcome');
+    if (isSuccess && typeof DjAuth !== 'undefined' && DjAuth.isAuthenticated()) {
+      onAuthenticated?.();
+      return;
+    }
+
+    if (loginError) {
+      loginError.textContent = bootMessage;
+      loginError.hidden = false;
+      loginError.classList.remove('login-notice');
+      loginError.classList.add(isSuccess ? 'login-notice' : 'login-error', 'show');
+    }
+
+    const tabs = gate.querySelectorAll('[data-auth-tab]');
+    const panels = gate.querySelectorAll('[data-auth-panel]');
+    tabs.forEach((tab) => {
+      tab.classList.toggle('active', tab.dataset.authTab === 'login');
+    });
+    panels.forEach((panel) => {
+      panel.classList.toggle('hidden', panel.dataset.authPanel !== 'login');
+    });
   },
 
   updateWelcome() {
