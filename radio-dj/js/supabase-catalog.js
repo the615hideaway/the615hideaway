@@ -55,7 +55,44 @@ const SupabaseCatalog = {
     });
   },
 
-  async fetchCatalogPayload() {
+  async fetchCatalogViaApi() {
+    const batchSize = 100;
+    let offset = 0;
+    let spotlights = [];
+    const allRows = [];
+    let total = null;
+
+    while (true) {
+      const url = `/api/catalog?offset=${offset}&limit=${batchSize}`;
+      const response = await fetch(url, { cache: 'no-store' });
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(payload.error || `Catalog API failed (HTTP ${response.status}).`);
+      }
+
+      const rows = Array.isArray(payload.songs) ? payload.songs : [];
+      if (offset === 0 && Array.isArray(payload.spotlights)) {
+        spotlights = payload.spotlights;
+      }
+
+      allRows.push(...rows);
+      total = payload.total ?? total;
+
+      if (!payload.hasMore || !rows.length) break;
+      offset += batchSize;
+
+      if (offset > 5000) break;
+    }
+
+    if (!allRows.length) {
+      throw new Error('Supabase catalog is empty. Run the catalog import after migration-catalog.sql.');
+    }
+
+    return { rows: allRows, spotlights, total };
+  },
+
+  async fetchCatalogViaClient() {
     const supabase = await HideawayAuth.init();
 
     const [{ data: songs, error: songsError }, { data: spotlights, error: spotlightsError }] = await Promise.all([
@@ -69,16 +106,37 @@ const SupabaseCatalog = {
       throw new Error('Supabase catalog is empty. Run the catalog import after migration-catalog.sql.');
     }
 
+    return { rows: songs, spotlights: spotlights || [], total: songs.length };
+  },
+
+  async fetchCatalogPayload() {
+    let rows = [];
+    let spotlights = [];
+    let total = null;
+
+    try {
+      const apiResult = await this.fetchCatalogViaApi();
+      rows = apiResult.rows;
+      spotlights = apiResult.spotlights;
+      total = apiResult.total;
+    } catch (apiErr) {
+      console.warn('Catalog API failed, trying direct Supabase client:', apiErr.message);
+      const clientResult = await this.fetchCatalogViaClient();
+      rows = clientResult.rows;
+      spotlights = clientResult.spotlights;
+      total = clientResult.total;
+    }
+
     const normalized = this.applySpotlights(
-      songs.map((row) => this.rowToSong(row)),
-      spotlights || [],
+      rows.map((row) => this.rowToSong(row)),
+      spotlights,
     );
 
     return {
       success: true,
       source: 'supabase',
       syncedAt: new Date().toISOString(),
-      songCount: normalized.length,
+      songCount: total ?? normalized.length,
       songs: normalized,
     };
   },

@@ -134,10 +134,6 @@ const DjAuthUI = {
         DjAuthUI.updateWelcome();
         onAuthenticated();
       } catch (err) {
-        if (String(err.message) === 'PROFILE_INCOMPLETE') {
-          await showProfileCompletion();
-          return;
-        }
         showError(loginError, err.message);
       } finally {
         submitBtn.disabled = false;

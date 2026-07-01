@@ -191,6 +191,10 @@ const DjAuth = {
     this._setSignedOutFlag();
     this.clearLocalSession();
     sessionStorage.removeItem(CONFIG.artistSessionKey);
+    localStorage.removeItem(CONFIG.artistSessionKey);
+    if (typeof RadioDB !== 'undefined' && RadioDB.invalidateCatalogCache) {
+      RadioDB.invalidateCatalogCache();
+    }
     this._clearSupabaseAuthStorage();
     try {
       if (typeof HideawayAuth !== 'undefined' && HideawayAuth.signOut) {
@@ -527,7 +531,10 @@ const DjAuth = {
       return await this.completeSessionSetup(data.session);
     } catch (err) {
       if (String(err.message) === 'PROFILE_INCOMPLETE') {
-        throw new Error('PROFILE_INCOMPLETE');
+        const publicDj = this._minimalDjFromSession(data.session);
+        this.saveSession({ token: '', dj: publicDj });
+        if (typeof DjBoot !== 'undefined') DjBoot._needsProfileCompletion = true;
+        return publicDj;
       }
       throw err;
     }

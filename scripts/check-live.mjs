@@ -61,6 +61,13 @@ async function main() {
     }
   }
 
+  const { res: apiCatRes, json: apiCat } = await fetchJson(`${SITE}/api/catalog?limit=5`);
+  if (apiCatRes.ok && apiCat?.songs?.length) {
+    pass('Catalog API', `${apiCat.songs.length} songs in first batch (total ${apiCat.total ?? '?'})`);
+  } else {
+    fail('Catalog API', apiCat?.error || `HTTP ${apiCatRes.status}`);
+  }
+
   const { res: importRes, json: importJson } = await fetchJson(`${SITE}/api/import-catalog`, {
     method: 'POST',
     headers: { 'x-service-key': 'health-check-probe' },

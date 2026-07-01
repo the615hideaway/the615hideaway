@@ -74,16 +74,27 @@ const DjBoot = {
       }
 
       if (authUi?.checkAfterBoot) {
-        const needsProfile = await authUi.checkAfterBoot();
-        if (needsProfile) {
-          onGuest?.();
-          return;
-        }
+        await authUi.checkAfterBoot();
       }
 
-      if (typeof DjAuth !== 'undefined' && DjAuth.getSession()?.dj) {
-        onAuthenticated?.();
-        return;
+      if (typeof DjAuth !== 'undefined') {
+        const cachedDj = DjAuth.getSession()?.dj;
+        if (cachedDj) {
+          onAuthenticated?.();
+          return;
+        }
+
+        try {
+          const supabase = await HideawayAuth.init();
+          const { data } = await supabase.auth.getSession();
+          if (data.session && !DjAuth.isExplicitlySignedOut?.()) {
+            const dj = await DjAuth.resolveSession();
+            if (dj || DjAuth.getSession()?.dj) {
+              onAuthenticated?.();
+              return;
+            }
+          }
+        } catch (_) {}
       }
 
       onGuest?.();
