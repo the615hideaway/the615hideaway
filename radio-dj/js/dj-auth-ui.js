@@ -16,8 +16,14 @@ const DjAuthUI = {
     };
 
     const clearErrors = () => {
-      loginError?.classList.remove('show');
-      signupError?.classList.remove('show');
+      if (loginError) {
+        loginError.textContent = '';
+        loginError.classList.remove('show');
+      }
+      if (signupError) {
+        signupError.textContent = '';
+        signupError.classList.remove('show');
+      }
     };
 
     const switchTab = (tabName) => {

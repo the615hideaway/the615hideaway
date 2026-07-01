@@ -79,8 +79,13 @@ const DjSignupForm = {
           </div>
         </fieldset>`;
 
+    const intro = isProfile
+      ? '<h2 class="dj-signup-intro">Update your DJ profile</h2>'
+      : '<h2 class="dj-signup-intro">Create your free DJ account</h2>';
+
     return `
       <div class="dj-signup-form dashboard-form ${isProfile ? 'dj-signup-form--profile' : ''}">
+        ${intro}
         <p class="auth-panel-note">${note}</p>
 
         <fieldset class="dj-signup-section">
@@ -176,11 +181,17 @@ const DjSignupForm = {
       child.remove();
     });
 
+    const errorEl = document.getElementById('signup-error');
     const fieldsHost = document.createElement('div');
     fieldsHost.id = 'dj-signup-fields';
     fieldsHost.innerHTML = this.fieldsHtml({ mode: 'signup' });
     if (submitBtn) form.insertBefore(fieldsHost, submitBtn);
     else form.appendChild(fieldsHost);
+
+    if (errorEl && submitBtn) {
+      errorEl.setAttribute('aria-live', 'polite');
+      form.insertBefore(errorEl, submitBtn);
+    }
 
     form.dataset.djSignupMounted = '1';
   },
